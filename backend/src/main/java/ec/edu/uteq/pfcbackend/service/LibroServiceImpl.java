@@ -34,9 +34,11 @@ public class LibroServiceImpl implements LibroService {
     private final EstadoLibroRepository estadoLibroRepository;
 
     @Override
-    @Cacheable(value = CACHE_LISTADO, key = "#pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort.toString()")
-    public Page<LibroResponse> listar(Pageable pageable) {
-        Page<Libro> pagina = libroRepository.findAll(pageable);
+    @Cacheable(value = CACHE_LISTADO, key = "#titulo + '-' + #pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort.toString()")
+    public Page<LibroResponse> listar(String titulo, Pageable pageable) {
+        Page<Libro> pagina = (titulo == null || titulo.isBlank())
+                ? libroRepository.findAll(pageable)
+                : libroRepository.findByTituloContainingIgnoreCase(titulo, pageable);
         return new CacheablePage<>(
                 pagina.getContent().stream().map(this::aResponse).toList(),
                 pagina.getNumber(),

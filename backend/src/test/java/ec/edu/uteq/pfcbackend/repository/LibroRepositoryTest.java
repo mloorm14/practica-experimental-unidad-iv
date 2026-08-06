@@ -1,5 +1,8 @@
 package ec.edu.uteq.pfcbackend.repository;
 
+import ec.edu.uteq.pfcbackend.entity.Editorial;
+import ec.edu.uteq.pfcbackend.entity.EstadoLibro;
+import ec.edu.uteq.pfcbackend.entity.Idioma;
 import ec.edu.uteq.pfcbackend.entity.Libro;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,11 +41,31 @@ class LibroRepositoryTest {
     @Autowired
     private LibroRepository libroRepository;
 
+    @Autowired
+    private EditorialRepository editorialRepository;
+
+    @Autowired
+    private IdiomaRepository idiomaRepository;
+
+    @Autowired
+    private EstadoLibroRepository estadoLibroRepository;
+
     private Libro libroDePrueba;
+    private Editorial editorial;
+    private Idioma idioma;
+    private EstadoLibro estado;
 
     @BeforeEach
     void setUp() {
-        libroRepository.deleteAll();
+        libroRepository.deleteAllInBatch();
+        editorialRepository.deleteAllInBatch();
+        idiomaRepository.deleteAllInBatch();
+        estadoLibroRepository.deleteAllInBatch();
+
+        editorial = editorialRepository.save(Editorial.builder().nombre("Sudamericana").build());
+        idioma = idiomaRepository.save(Idioma.builder().nombre("Español").build());
+        estado = estadoLibroRepository.save(EstadoLibro.builder().nombre("Disponible").build());
+
         libroDePrueba = Libro.builder()
                 .titulo("Cien años de soledad")
                 .descripcion("Novela de Gabriel García Márquez")
@@ -50,9 +73,9 @@ class LibroRepositoryTest {
                 .genero("Realismo mágico")
                 .autor("Gabriel García Márquez")
                 .anioPublicacion(1967)
-                .editorial("Sudamericana")
-                .idioma("Español")
-                .estado("Disponible")
+                .editorial(editorial)
+                .idioma(idioma)
+                .estado(estado)
                 .stock(10)
                 .build();
         libroRepository.save(libroDePrueba);
@@ -98,6 +121,9 @@ class LibroRepositoryTest {
                 .isbn("978-8497592208")
                 .autor("Gabriel García Márquez")
                 .anioPublicacion(1985)
+                .editorial(editorial)
+                .idioma(idioma)
+                .estado(estado)
                 .stock(5)
                 .build());
 
@@ -115,6 +141,9 @@ class LibroRepositoryTest {
                 .isbn("978-8437604572")
                 .autor("Julio Cortázar")
                 .anioPublicacion(1963)
+                .editorial(editorial)
+                .idioma(idioma)
+                .estado(estado)
                 .stock(3)
                 .build());
 

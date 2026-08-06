@@ -2,9 +2,15 @@ package ec.edu.uteq.pfcbackend.service;
 
 import ec.edu.uteq.pfcbackend.dto.LibroRequest;
 import ec.edu.uteq.pfcbackend.dto.LibroResponse;
+import ec.edu.uteq.pfcbackend.entity.Editorial;
+import ec.edu.uteq.pfcbackend.entity.EstadoLibro;
+import ec.edu.uteq.pfcbackend.entity.Idioma;
 import ec.edu.uteq.pfcbackend.entity.Libro;
 import ec.edu.uteq.pfcbackend.exception.BusinessException;
 import ec.edu.uteq.pfcbackend.exception.ResourceNotFoundException;
+import ec.edu.uteq.pfcbackend.repository.EditorialRepository;
+import ec.edu.uteq.pfcbackend.repository.EstadoLibroRepository;
+import ec.edu.uteq.pfcbackend.repository.IdiomaRepository;
 import ec.edu.uteq.pfcbackend.repository.LibroRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,14 +41,30 @@ class LibroServiceImplTest {
     @Mock
     private LibroRepository libroRepository;
 
+    @Mock
+    private EditorialRepository editorialRepository;
+
+    @Mock
+    private IdiomaRepository idiomaRepository;
+
+    @Mock
+    private EstadoLibroRepository estadoLibroRepository;
+
     @InjectMocks
     private LibroServiceImpl libroService;
 
     private Libro libroExistente;
     private LibroRequest requestValido;
+    private Editorial editorial;
+    private Idioma idioma;
+    private EstadoLibro estado;
 
     @BeforeEach
     void setUp() {
+        editorial = Editorial.builder().id(1L).nombre("Sudamericana").build();
+        idioma = Idioma.builder().id(1L).nombre("Español").build();
+        estado = EstadoLibro.builder().id(1L).nombre("Disponible").build();
+
         libroExistente = Libro.builder()
                 .id(1L)
                 .titulo("Cien años de soledad")
@@ -51,9 +73,9 @@ class LibroServiceImplTest {
                 .genero("Realismo mágico")
                 .autor("Gabriel García Márquez")
                 .anioPublicacion(1967)
-                .editorial("Sudamericana")
-                .idioma("Español")
-                .estado("Disponible")
+                .editorial(editorial)
+                .idioma(idioma)
+                .estado(estado)
                 .stock(10)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
@@ -62,7 +84,7 @@ class LibroServiceImplTest {
         requestValido = new LibroRequest(
                 "Rayuela", "Novela experimental", "978-8437604572",
                 "Vanguardia", "Julio Cortázar", 1963,
-                "Sudamericana", "Español", "Disponible", 5
+                editorial.getId(), idioma.getId(), estado.getId(), 5
         );
     }
 
@@ -72,7 +94,7 @@ class LibroServiceImplTest {
         Page<Libro> pagina = new PageImpl<>(List.of(libroExistente), pageable, 1);
         when(libroRepository.findAll(pageable)).thenReturn(pagina);
 
-        Page<LibroResponse> resultado = libroService.listar(pageable);
+        Page<LibroResponse> resultado = libroService.listar(null, pageable);
 
         assertThat(resultado.getTotalElements()).isEqualTo(1);
         assertThat(resultado.getContent().get(0).titulo()).isEqualTo("Cien años de soledad");
@@ -100,6 +122,9 @@ class LibroServiceImplTest {
     @Test
     void crearGuardaElLibroSiElIsbnNoExiste() {
         when(libroRepository.findByIsbnIgnoreCase(requestValido.isbn())).thenReturn(Optional.empty());
+        when(editorialRepository.findById(editorial.getId())).thenReturn(Optional.of(editorial));
+        when(idiomaRepository.findById(idioma.getId())).thenReturn(Optional.of(idioma));
+        when(estadoLibroRepository.findById(estado.getId())).thenReturn(Optional.of(estado));
         when(libroRepository.save(any(Libro.class))).thenAnswer(invocacion -> {
             Libro l = invocacion.getArgument(0);
             l.setId(2L);
@@ -131,6 +156,9 @@ class LibroServiceImplTest {
     void actualizarModificaElLibroSiExiste() {
         when(libroRepository.findById(1L)).thenReturn(Optional.of(libroExistente));
         when(libroRepository.findByIsbnIgnoreCase(requestValido.isbn())).thenReturn(Optional.empty());
+        when(editorialRepository.findById(editorial.getId())).thenReturn(Optional.of(editorial));
+        when(idiomaRepository.findById(idioma.getId())).thenReturn(Optional.of(idioma));
+        when(estadoLibroRepository.findById(estado.getId())).thenReturn(Optional.of(estado));
         when(libroRepository.save(any(Libro.class))).thenAnswer(invocacion -> invocacion.getArgument(0));
 
         LibroResponse resultado = libroService.actualizar(1L, requestValido);

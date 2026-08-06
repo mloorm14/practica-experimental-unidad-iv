@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface LibroService {
 
-    Page<LibroResponse> listar(Pageable pageable);
+    Page<LibroResponse> listar(String titulo, Pageable pageable);
 
     LibroResponse obtenerPorId(Long id);
 
