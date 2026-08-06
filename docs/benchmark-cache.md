@@ -37,6 +37,47 @@ La primera repetición de cada bloque muestra un pico (429.17 ms sin cache, 28.0
 
 El primer número (5.31x) sobreestima el beneficio real del cache porque compara un caso frío contra uno ya calentado. El segundo número (1.70x) es más representativo del beneficio que aporta Redis en un sistema en régimen estable: una reducción de aproximadamente el 41% en el tiempo de respuesta al evitar la consulta a PostgreSQL.
 
+## Análisis estadístico
+
+Se calculan, para cada escenario y cada uno de los dos bloques de datos (con todos los datos, y excluyendo la 1ª repetición), la desviación estándar muestral y el intervalo de confianza (IC) del 95% para la media, usando la distribución t de Student (n=10 y n=9 son muestras pequeñas, por lo que no corresponde usar z).
+
+**Fórmulas usadas:**
+
+- Media: x̄ = Σxᵢ / n
+- Desviación estándar muestral: s = √[ Σ(xᵢ − x̄)² / (n − 1) ]
+- Error estándar de la media: SE = s / √n
+- Intervalo de confianza 95%: x̄ ± t(0.025, gl) · SE, con gl = n − 1
+
+### Bloque 1 — Con todos los datos (incluye arranque en frío), n = 10, gl = 9, t crítico = 2.262
+
+| Escenario | x̄ (ms) | s (ms) | SE = s/√n (ms) | Margen = t·SE (ms) | IC 95% |
+|---|---|---|---|---|---|
+| Sin cache | 56.15 | 131.07 | 41.45 | 93.76 | (−37.61, 149.90) |
+| Con cache | 10.58 | 6.21 | 1.96 | 4.44 | (6.14, 15.02) |
+
+### Bloque 2 — Excluyendo la 1ª repetición de cada bloque, n = 9, gl = 8, t crítico = 2.306
+
+| Escenario | x̄ (ms) | s (ms) | SE = s/√n (ms) | Margen = t·SE (ms) | IC 95% |
+|---|---|---|---|---|---|
+| Sin cache | 14.70 | 1.46 | 0.486 | 1.12 | (13.58, 15.82) |
+| Con cache | 8.64 | 1.02 | 0.342 | 0.79 | (7.85, 9.43) |
+
+**Interpretación del solapamiento de los IC:**
+
+En el Bloque 1 (con el dato de arranque en frío incluido), el IC de "sin cache" (−37.61, 149.90) es tan ancho —por la enorme dispersión que introduce el outlier de 429.17 ms— que contiene por completo al IC de "con cache" (6.14, 15.02). Los intervalos se solapan, y con esta única evidencia no se puede afirmar que la diferencia observada sea estadísticamente significativa: podría deberse a ruido de muestreo. En el Bloque 2 (régimen estable, sin el outlier), el IC de "sin cache" (13.58, 15.82) y el de "con cache" (7.85, 9.43) **no se solapan** — el límite inferior de "sin cache" (13.58) queda muy por encima del límite superior de "con cache" (9.43). Esto sí sustenta que la diferencia entre ambos escenarios es estadísticamente significativa al 95% en condiciones de régimen estable, y no un artefacto del muestreo.
+
+**IC del speedup en régimen estable (Bloque 2):**
+
+Para el cociente S = x̄_sin / x̄_con de dos medias independientes se aproxima su error estándar por el método delta (propagación de errores relativos):
+
+SE(S) ≈ S · √[ (SE_sin / x̄_sin)² + (SE_con / x̄_con)² ]
+
+Sustituyendo: SE(S) ≈ 1.70 · √[ (0.486/14.70)² + (0.342/8.64)² ] = 1.70 · √[ 0.03306² + 0.03958² ] = 1.70 · √0.002657 ≈ 1.70 · 0.0515 ≈ 0.088
+
+Margen = t(0.025, 8) · SE(S) = 2.306 · 0.088 ≈ 0.20
+
+IC 95% del speedup en régimen estable: **1.70 ± 0.20 → (1.50, 1.90)**
+
 ## Conclusión
 
-El cache-aside implementado con `@Cacheable`/`@CacheEvict` sobre `GET /api/libros` reduce el tiempo de respuesta de forma consistente. El beneficio medido en condiciones estables (sin efectos de arranque en frío) es de aproximadamente **1.7x**, cifra que crecería en escenarios con consultas más costosas (más registros, joins, filtros complejos) donde el costo de ir a base de datos pesa más frente al costo fijo de leer de Redis.
+El cache-aside implementado con `@Cacheable`/`@CacheEvict` sobre `GET /api/libros` reduce el tiempo de respuesta de forma consistente. El beneficio medido en condiciones estables (sin efectos de arranque en frío) es de aproximadamente **1.7x** (IC 95%: 1.50x–1.90x), cifra que crecería en escenarios con consultas más costosas (más registros, joins, filtros complejos) donde el costo de ir a base de datos pesa más frente al costo fijo de leer de Redis.
