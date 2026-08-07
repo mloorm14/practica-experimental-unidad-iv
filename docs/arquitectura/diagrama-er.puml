@@ -1,0 +1,83 @@
+@startuml diagrama-er
+
+title Diagrama Entidad-Relacion - Esquema real de PostgreSQL\n(reconstruido acumulando V1..V6 de Flyway: productos -> libros, texto libre -> FKs)
+
+hide circle
+skinparam linetype ortho
+
+entity "libros" as libros {
+  * id : BIGSERIAL <<generated>>
+  --
+  * titulo : VARCHAR(150)
+  descripcion : VARCHAR(500)
+  * isbn : VARCHAR(50) <<UK: uk_libros_isbn>>
+  genero : VARCHAR(100) <<indexed: idx_libros_genero>>
+  autor : VARCHAR(150)
+  anio_publicacion : INTEGER
+  * editorial_id : BIGINT <<FK: fk_libros_editorial>>
+  * idioma_id : BIGINT <<FK: fk_libros_idioma>>
+  * estado_id : BIGINT <<FK: fk_libros_estado>>
+  * stock : INTEGER = 0
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+}
+
+entity "editoriales" as editoriales {
+  * id : BIGSERIAL <<generated>>
+  --
+  * nombre : VARCHAR(150) <<UK: uk_editoriales_nombre>>
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+}
+
+entity "idiomas" as idiomas {
+  * id : BIGSERIAL <<generated>>
+  --
+  * nombre : VARCHAR(50) <<UK: uk_idiomas_nombre>>
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+}
+
+entity "estados_libro" as estados_libro {
+  * id : BIGSERIAL <<generated>>
+  --
+  * nombre : VARCHAR(30) <<UK: uk_estados_libro_nombre>>
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+}
+
+entity "usuarios" as usuarios {
+  * id : BIGSERIAL <<generated>>
+  --
+  * username : VARCHAR(50) <<UK: uk_usuarios_username>>
+  * password : VARCHAR(255)
+  * rol : VARCHAR(30) = 'USER'
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+}
+
+' Cardinalidad real segun V5: editorial_id/idioma_id/estado_id son NOT NULL con FK
+' -> cada libro pertenece exactamente a 1 editorial/idioma/estado (mandatorio);
+' cada editorial/idioma/estado puede tener 0..N libros (opcional del lado maestro).
+libros }o--|| editoriales : editorial_id
+libros }o--|| idiomas : idioma_id
+libros }o--|| estados_libro : estado_id
+
+' usuarios no tiene ninguna FK hacia otra tabla: es independiente del catalogo,
+' solo se usa para autenticacion (ver AuthController).
+
+note bottom of usuarios
+  Tabla independiente del catalogo.
+  Sin FK hacia/desde libros, editoriales,
+  idiomas o estados_libro.
+end note
+
+note bottom of libros
+  Hasta V2 la tabla se llamaba "productos" y
+  editorial/idioma/estado eran VARCHAR de texto
+  libre; V3 la renombro a "libros" y V5 migro
+  esas 3 columnas a FKs reales (NOT NULL) hacia
+  las tablas maestras creadas en V4.
+end note
+
+@enduml

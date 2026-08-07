@@ -1,0 +1,112 @@
+@startuml diagrama-clases
+
+title Modelo de Dominio - Sistema PFC Gestion Bibliotecaria\n(Entidades JPA + DTOs de Libro)
+
+skinparam classAttributeIconSize 0
+hide circle
+
+package "entity" {
+
+    class Libro {
+        + id : Long <<PK>>
+        + titulo : String
+        + descripcion : String
+        + isbn : String
+        + genero : String
+        + autor : String
+        + anioPublicacion : Integer
+        + stock : Integer
+        + createdAt : LocalDateTime
+        + updatedAt : LocalDateTime
+    }
+
+    class Editorial {
+        + id : Long <<PK>>
+        + nombre : String
+        + createdAt : LocalDateTime
+        + updatedAt : LocalDateTime
+    }
+
+    class Idioma {
+        + id : Long <<PK>>
+        + nombre : String
+        + createdAt : LocalDateTime
+        + updatedAt : LocalDateTime
+    }
+
+    class EstadoLibro {
+        + id : Long <<PK>>
+        + nombre : String
+        + createdAt : LocalDateTime
+        + updatedAt : LocalDateTime
+    }
+
+    class Usuario {
+        + id : Long <<PK>>
+        + username : String
+        + password : String
+        + rol : String
+        + createdAt : LocalDateTime
+        + updatedAt : LocalDateTime
+    }
+}
+
+package "dto (Libro)" {
+    class LibroRequest <<record>> {
+        + titulo : String
+        + descripcion : String
+        + isbn : String
+        + genero : String
+        + autor : String
+        + anioPublicacion : Integer
+        + editorialId : Long
+        + idiomaId : Long
+        + estadoId : Long
+        + stock : Integer
+    }
+
+    class LibroResponse <<record>> {
+        + id : Long
+        + titulo : String
+        + descripcion : String
+        + isbn : String
+        + genero : String
+        + autor : String
+        + anioPublicacion : Integer
+        + editorialId : Long
+        + editorialNombre : String
+        + idiomaId : Long
+        + idiomaNombre : String
+        + estadoId : Long
+        + estadoNombre : String
+        + stock : Integer
+        + createdAt : LocalDateTime
+        + updatedAt : LocalDateTime
+    }
+}
+
+' Relaciones JPA reales (@ManyToOne unidireccional: no existe @OneToMany de vuelta en Editorial/Idioma/EstadoLibro)
+Libro "N" -- "1" Editorial : editorial (editorial_id, NOT NULL)
+Libro "N" -- "1" Idioma : idioma (idioma_id, NOT NULL)
+Libro "N" -- "1" EstadoLibro : estado (estado_id, NOT NULL)
+
+' Usuario es independiente del catalogo (solo autenticacion), sin relaciones JPA hacia otras entidades
+
+' DTOs de Libro: no son mapeados por JPA, se construyen/leen en la capa de Servicios a partir de Libro
+LibroRequest ..> Libro : "crea / actualiza"
+Libro ..> LibroResponse : "se mapea a"
+
+note right of LibroRequest
+  DTO de entrada (record inmutable).
+  editorialId/idiomaId/estadoId son IDs planos,
+  no referencias a objeto: el Service los resuelve
+  contra los repositorios de catalogo.
+end note
+
+note right of LibroResponse
+  DTO de salida (record inmutable).
+  Aplana editorial/idioma/estado a
+  su id + nombre (sin exponer la entidad JPA).
+end note
+
+@enduml
