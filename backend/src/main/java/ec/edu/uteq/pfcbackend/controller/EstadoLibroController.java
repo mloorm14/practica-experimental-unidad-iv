@@ -4,6 +4,8 @@ import ec.edu.uteq.pfcbackend.dto.ApiResponse;
 import ec.edu.uteq.pfcbackend.dto.EstadoLibroRequest;
 import ec.edu.uteq.pfcbackend.dto.EstadoLibroResponse;
 import ec.edu.uteq.pfcbackend.service.EstadoLibroService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
@@ -25,11 +27,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/estados-libro")
 @RequiredArgsConstructor
+@Tag(name = "Estados de libro", description = "Catalogo de estados posibles de un libro")
 public class EstadoLibroController {
 
     private final EstadoLibroService estadoLibroService;
 
     @GetMapping
+    @Operation(summary = "Listar estados de libro")
     public ApiResponse<List<EstadoLibroResponse>> listar(Pageable pageable) {
         Page<EstadoLibroResponse> pagina = estadoLibroService.listar(pageable);
         Map<String, Object> meta = Map.of(
@@ -41,22 +45,26 @@ public class EstadoLibroController {
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Obtener un estado de libro por id")
     public ApiResponse<EstadoLibroResponse> obtenerPorId(@PathVariable Long id) {
         return ApiResponse.success(estadoLibroService.obtenerPorId(id));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Crear un estado de libro")
     public ApiResponse<EstadoLibroResponse> crear(@Valid @RequestBody EstadoLibroRequest request) {
         return ApiResponse.success(estadoLibroService.crear(request));
     }
 
     @PutMapping("/{id}")
+    @Operation(summary = "Actualizar un estado de libro existente")
     public ApiResponse<EstadoLibroResponse> actualizar(@PathVariable Long id, @Valid @RequestBody EstadoLibroRequest request) {
         return ApiResponse.success(estadoLibroService.actualizar(id, request));
     }
 
     @DeleteMapping("/{id}")
+    @Operation(summary = "Eliminar un estado de libro")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         estadoLibroService.eliminar(id);
         return ResponseEntity.noContent().build();

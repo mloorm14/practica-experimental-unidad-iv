@@ -4,6 +4,8 @@ import ec.edu.uteq.pfcbackend.dto.ApiResponse;
 import ec.edu.uteq.pfcbackend.dto.LibroRequest;
 import ec.edu.uteq.pfcbackend.dto.LibroResponse;
 import ec.edu.uteq.pfcbackend.service.LibroService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
@@ -26,11 +28,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/libros")
 @RequiredArgsConstructor
+@Tag(name = "Libros", description = "Gestion del inventario de libros")
 public class LibroController {
 
     private final LibroService libroService;
 
     @GetMapping
+    @Operation(summary = "Listar libros, con filtro opcional por titulo")
     public ApiResponse<List<LibroResponse>> listar(@RequestParam(required = false) String titulo, Pageable pageable) {
         Page<LibroResponse> pagina = libroService.listar(titulo, pageable);
         Map<String, Object> meta = Map.of(
@@ -42,22 +46,26 @@ public class LibroController {
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Obtener un libro por id")
     public ApiResponse<LibroResponse> obtenerPorId(@PathVariable Long id) {
         return ApiResponse.success(libroService.obtenerPorId(id));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Crear un libro")
     public ApiResponse<LibroResponse> crear(@Valid @RequestBody LibroRequest request) {
         return ApiResponse.success(libroService.crear(request));
     }
 
     @PutMapping("/{id}")
+    @Operation(summary = "Actualizar un libro existente")
     public ApiResponse<LibroResponse> actualizar(@PathVariable Long id, @Valid @RequestBody LibroRequest request) {
         return ApiResponse.success(libroService.actualizar(id, request));
     }
 
     @DeleteMapping("/{id}")
+    @Operation(summary = "Eliminar un libro")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         libroService.eliminar(id);
         return ResponseEntity.noContent().build();

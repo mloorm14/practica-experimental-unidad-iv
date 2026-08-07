@@ -4,6 +4,8 @@ import ec.edu.uteq.pfcbackend.dto.ApiResponse;
 import ec.edu.uteq.pfcbackend.dto.IdiomaRequest;
 import ec.edu.uteq.pfcbackend.dto.IdiomaResponse;
 import ec.edu.uteq.pfcbackend.service.IdiomaService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
@@ -25,11 +27,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/idiomas")
 @RequiredArgsConstructor
+@Tag(name = "Idiomas", description = "Catalogo de idiomas")
 public class IdiomaController {
 
     private final IdiomaService idiomaService;
 
     @GetMapping
+    @Operation(summary = "Listar idiomas")
     public ApiResponse<List<IdiomaResponse>> listar(Pageable pageable) {
         Page<IdiomaResponse> pagina = idiomaService.listar(pageable);
         Map<String, Object> meta = Map.of(
@@ -41,22 +45,26 @@ public class IdiomaController {
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Obtener un idioma por id")
     public ApiResponse<IdiomaResponse> obtenerPorId(@PathVariable Long id) {
         return ApiResponse.success(idiomaService.obtenerPorId(id));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Crear un idioma")
     public ApiResponse<IdiomaResponse> crear(@Valid @RequestBody IdiomaRequest request) {
         return ApiResponse.success(idiomaService.crear(request));
     }
 
     @PutMapping("/{id}")
+    @Operation(summary = "Actualizar un idioma existente")
     public ApiResponse<IdiomaResponse> actualizar(@PathVariable Long id, @Valid @RequestBody IdiomaRequest request) {
         return ApiResponse.success(idiomaService.actualizar(id, request));
     }
 
     @DeleteMapping("/{id}")
+    @Operation(summary = "Eliminar un idioma")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         idiomaService.eliminar(id);
         return ResponseEntity.noContent().build();

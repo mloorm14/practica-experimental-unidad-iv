@@ -10,6 +10,9 @@ import ec.edu.uteq.pfcbackend.security.JwtService;
 import ec.edu.uteq.pfcbackend.security.TokenBlacklistService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -28,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
+@Tag(name = "Autenticacion", description = "Login y logout basados en JWT via cookie HttpOnly")
 public class AuthController {
 
     private static final String COOKIE_NAME = "access_token";
@@ -38,6 +42,8 @@ public class AuthController {
     private final TokenBlacklistService tokenBlacklistService;
 
     @PostMapping("/login")
+    @Operation(summary = "Iniciar sesion")
+    @SecurityRequirements
     public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
         Usuario usuario = usuarioRepository.findByUsername(request.username())
                 .orElseThrow(() -> new InvalidCredentialsException("Usuario o password invalidos"));
@@ -55,6 +61,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
+    @Operation(summary = "Cerrar sesion e invalidar el token actual")
     public ResponseEntity<Void> logout(HttpServletRequest request) {
         String token = extraerTokenDeCookie(request);
 

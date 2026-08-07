@@ -41,3 +41,11 @@ management:
   endpoint:
     health:
       show-details: always
+
+# JSON crudo de OpenAPI queda en el path por defecto de springdoc (/v3/api-docs):
+# ni el PDF de la guia ni el enunciado del SGA exigen un path especifico para el JSON,
+# solo para la UI interactiva (swagger-ui.path). Ver DocsRedirectController para el
+# alias /api/docs -> /api/documentation que cumple la letra del SGA.
+springdoc:
+  swagger-ui:
+    path: /api/documentation
