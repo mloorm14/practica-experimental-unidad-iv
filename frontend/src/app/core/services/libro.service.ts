@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { environment } from '../../../environments/environment';
 import { Libro, PageResponse } from '../models/libro.model';
+import { ApiResponse } from '../models/api-response.model';
 
 export type LibroRequest = Omit<Libro, 'id' | 'createdAt' | 'updatedAt'>;
 
@@ -16,19 +18,35 @@ export class LibroService {
       .set('page', pagina)
       .set('size', tamanio);
 
-    return this.http.get<PageResponse<Libro>>(`${environment.apiUrl}/libros`, { params });
+    return this.http
+      .get<ApiResponse<Libro[]>>(`${environment.apiUrl}/libros`, { params })
+      .pipe(
+        map((respuesta) => ({
+          content: respuesta.data,
+          totalElements: Number(respuesta.meta['total'] ?? 0),
+          totalPages: Number(respuesta.meta['last_page'] ?? 0),
+          number: Number(respuesta.meta['current_page'] ?? 0),
+          size: tamanio,
+        })),
+      );
   }
 
   obtenerPorId(id: number): Observable<Libro> {
-    return this.http.get<Libro>(`${environment.apiUrl}/libros/${id}`);
+    return this.http
+      .get<ApiResponse<Libro>>(`${environment.apiUrl}/libros/${id}`)
+      .pipe(map((respuesta) => respuesta.data));
   }
 
   crear(libro: LibroRequest): Observable<Libro> {
-    return this.http.post<Libro>(`${environment.apiUrl}/libros`, libro);
+    return this.http
+      .post<ApiResponse<Libro>>(`${environment.apiUrl}/libros`, libro)
+      .pipe(map((respuesta) => respuesta.data));
   }
 
   actualizar(id: number, libro: LibroRequest): Observable<Libro> {
-    return this.http.put<Libro>(`${environment.apiUrl}/libros/${id}`, libro);
+    return this.http
+      .put<ApiResponse<Libro>>(`${environment.apiUrl}/libros/${id}`, libro)
+      .pipe(map((respuesta) => respuesta.data));
   }
   eliminar(id: number): Observable<void> {
     return this.http.delete<void>(`${environment.apiUrl}/libros/${id}`);

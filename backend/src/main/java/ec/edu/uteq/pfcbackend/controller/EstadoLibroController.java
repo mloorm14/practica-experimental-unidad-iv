@@ -1,9 +1,12 @@
 package ec.edu.uteq.pfcbackend.controller;
 
+import ec.edu.uteq.pfcbackend.dto.ApiResponse;
 import ec.edu.uteq.pfcbackend.dto.EstadoLibroRequest;
 import ec.edu.uteq.pfcbackend.dto.EstadoLibroResponse;
 import ec.edu.uteq.pfcbackend.service.EstadoLibroService;
 import jakarta.validation.Valid;
+import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,31 +23,37 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/estados-libro")
+@RequestMapping("/api/v1/estados-libro")
 @RequiredArgsConstructor
 public class EstadoLibroController {
 
     private final EstadoLibroService estadoLibroService;
 
     @GetMapping
-    public Page<EstadoLibroResponse> listar(Pageable pageable) {
-        return estadoLibroService.listar(pageable);
+    public ApiResponse<List<EstadoLibroResponse>> listar(Pageable pageable) {
+        Page<EstadoLibroResponse> pagina = estadoLibroService.listar(pageable);
+        Map<String, Object> meta = Map.of(
+                "current_page", pagina.getNumber(),
+                "total", pagina.getTotalElements(),
+                "last_page", pagina.getTotalPages()
+        );
+        return ApiResponse.success(pagina.getContent(), null, meta);
     }
 
     @GetMapping("/{id}")
-    public EstadoLibroResponse obtenerPorId(@PathVariable Long id) {
-        return estadoLibroService.obtenerPorId(id);
+    public ApiResponse<EstadoLibroResponse> obtenerPorId(@PathVariable Long id) {
+        return ApiResponse.success(estadoLibroService.obtenerPorId(id));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public EstadoLibroResponse crear(@Valid @RequestBody EstadoLibroRequest request) {
-        return estadoLibroService.crear(request);
+    public ApiResponse<EstadoLibroResponse> crear(@Valid @RequestBody EstadoLibroRequest request) {
+        return ApiResponse.success(estadoLibroService.crear(request));
     }
 
     @PutMapping("/{id}")
-    public EstadoLibroResponse actualizar(@PathVariable Long id, @Valid @RequestBody EstadoLibroRequest request) {
-        return estadoLibroService.actualizar(id, request);
+    public ApiResponse<EstadoLibroResponse> actualizar(@PathVariable Long id, @Valid @RequestBody EstadoLibroRequest request) {
+        return ApiResponse.success(estadoLibroService.actualizar(id, request));
     }
 
     @DeleteMapping("/{id}")

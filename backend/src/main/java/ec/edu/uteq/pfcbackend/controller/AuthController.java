@@ -1,5 +1,6 @@
 package ec.edu.uteq.pfcbackend.controller;
 
+import ec.edu.uteq.pfcbackend.dto.ApiResponse;
 import ec.edu.uteq.pfcbackend.dto.LoginRequest;
 import ec.edu.uteq.pfcbackend.dto.LoginResponse;
 import ec.edu.uteq.pfcbackend.entity.Usuario;
@@ -25,7 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -37,7 +38,7 @@ public class AuthController {
     private final TokenBlacklistService tokenBlacklistService;
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
         Usuario usuario = usuarioRepository.findByUsername(request.username())
                 .orElseThrow(() -> new InvalidCredentialsException("Usuario o password invalidos"));
 
@@ -50,7 +51,7 @@ public class AuthController {
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(new LoginResponse(usuario.getUsername(), usuario.getRol()));
+                .body(ApiResponse.success(new LoginResponse(usuario.getUsername(), usuario.getRol())));
     }
 
     @PostMapping("/logout")

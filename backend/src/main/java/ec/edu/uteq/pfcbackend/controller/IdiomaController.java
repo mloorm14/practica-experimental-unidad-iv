@@ -1,9 +1,12 @@
 package ec.edu.uteq.pfcbackend.controller;
 
+import ec.edu.uteq.pfcbackend.dto.ApiResponse;
 import ec.edu.uteq.pfcbackend.dto.IdiomaRequest;
 import ec.edu.uteq.pfcbackend.dto.IdiomaResponse;
 import ec.edu.uteq.pfcbackend.service.IdiomaService;
 import jakarta.validation.Valid;
+import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,31 +23,37 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/idiomas")
+@RequestMapping("/api/v1/idiomas")
 @RequiredArgsConstructor
 public class IdiomaController {
 
     private final IdiomaService idiomaService;
 
     @GetMapping
-    public Page<IdiomaResponse> listar(Pageable pageable) {
-        return idiomaService.listar(pageable);
+    public ApiResponse<List<IdiomaResponse>> listar(Pageable pageable) {
+        Page<IdiomaResponse> pagina = idiomaService.listar(pageable);
+        Map<String, Object> meta = Map.of(
+                "current_page", pagina.getNumber(),
+                "total", pagina.getTotalElements(),
+                "last_page", pagina.getTotalPages()
+        );
+        return ApiResponse.success(pagina.getContent(), null, meta);
     }
 
     @GetMapping("/{id}")
-    public IdiomaResponse obtenerPorId(@PathVariable Long id) {
-        return idiomaService.obtenerPorId(id);
+    public ApiResponse<IdiomaResponse> obtenerPorId(@PathVariable Long id) {
+        return ApiResponse.success(idiomaService.obtenerPorId(id));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public IdiomaResponse crear(@Valid @RequestBody IdiomaRequest request) {
-        return idiomaService.crear(request);
+    public ApiResponse<IdiomaResponse> crear(@Valid @RequestBody IdiomaRequest request) {
+        return ApiResponse.success(idiomaService.crear(request));
     }
 
     @PutMapping("/{id}")
-    public IdiomaResponse actualizar(@PathVariable Long id, @Valid @RequestBody IdiomaRequest request) {
-        return idiomaService.actualizar(id, request);
+    public ApiResponse<IdiomaResponse> actualizar(@PathVariable Long id, @Valid @RequestBody IdiomaRequest request) {
+        return ApiResponse.success(idiomaService.actualizar(id, request));
     }
 
     @DeleteMapping("/{id}")

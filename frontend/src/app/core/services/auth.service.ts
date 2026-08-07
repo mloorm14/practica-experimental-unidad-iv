@@ -1,9 +1,11 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { environment } from '../../../environments/environment';
 import { LoginRequest, Usuario } from '../models/usuario.model';
+import { ApiResponse } from '../models/api-response.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -14,8 +16,11 @@ export class AuthService {
 
   login(credenciales: LoginRequest): Observable<Usuario> {
     return this.http
-      .post<Usuario>(`${environment.apiUrl}/auth/login`, credenciales)
-      .pipe(tap((usuario) => this.usuarioActual.set(usuario)));
+      .post<ApiResponse<Usuario>>(`${environment.apiUrl}/auth/login`, credenciales)
+      .pipe(
+        map((respuesta) => respuesta.data),
+        tap((usuario) => this.usuarioActual.set(usuario)),
+      );
   }
 
   logout(): Observable<void> {
