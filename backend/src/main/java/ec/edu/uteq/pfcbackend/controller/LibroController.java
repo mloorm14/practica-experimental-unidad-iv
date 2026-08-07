@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -54,18 +55,21 @@ public class LibroController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Crear un libro")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<LibroResponse> crear(@Valid @RequestBody LibroRequest request) {
         return ApiResponse.success(libroService.crear(request));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Actualizar un libro existente")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<LibroResponse> actualizar(@PathVariable Long id, @Valid @RequestBody LibroRequest request) {
         return ApiResponse.success(libroService.actualizar(id, request));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Eliminar un libro")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         libroService.eliminar(id);
         return ResponseEntity.noContent().build();

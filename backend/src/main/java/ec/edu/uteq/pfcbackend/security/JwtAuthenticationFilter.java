@@ -18,6 +18,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final String COOKIE_NAME = "access_token";
+    private static final String HEADER_AUTORIZACION = "Authorization";
+    private static final String PREFIJO_BEARER = "Bearer ";
 
     private final JwtService jwtService;
     private final TokenBlacklistService tokenBlacklistService;
@@ -31,7 +33,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        String token = extraerTokenDeCookie(request);
+        String token = extraerTokenDeHeader(request);
+        if (token == null) {
+            token = extraerTokenDeCookie(request);
+        }
 
         if (token != null) {
             try {
@@ -43,13 +48,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
                 // Si esta en la blacklist, no se autentica: la request sigue anonima y
-                // SecurityConfig la rechaza con 401 al exigir authenticated() en /api/**.
+                // SecurityConfig la rechaza con 401 al exigir authenticated() en /api/v1/**.
             } catch (JwtException ignored) {
                 // Token invalido/expirado: se ignora y la request sigue como anonima.
             }
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private String extraerTokenDeHeader(HttpServletRequest request) {
+        String header = request.getHeader(HEADER_AUTORIZACION);
+        if (header != null && header.startsWith(PREFIJO_BEARER)) {
+            return header.substring(PREFIJO_BEARER.length());
+        }
+        return null;
     }
 
     private String extraerTokenDeCookie(HttpServletRequest request) {
