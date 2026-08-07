@@ -19,6 +19,7 @@ import jakarta.validation.Valid;
 import java.time.Duration;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +41,9 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final TokenBlacklistService tokenBlacklistService;
+
+    @Value("${app.cookie.secure}")
+    private boolean cookieSecure;
 
     @PostMapping("/login")
     @Operation(summary = "Iniciar sesion")
@@ -85,8 +89,9 @@ public class AuthController {
     private ResponseCookie construirCookie(String valor, Duration maxAge) {
         return ResponseCookie.from(COOKIE_NAME, valor)
                 .httpOnly(true)
-                // Secure=false solo para desarrollo local sin HTTPS; en produccion DEBE ser true.
-                .secure(false)
+                // app.cookie.secure (COOKIE_SECURE): true por defecto, override a false solo
+                // en el .env de desarrollo local (docker-compose sobre HTTP plano sin TLS).
+                .secure(cookieSecure)
                 .sameSite("Strict")
                 .path("/")
                 .maxAge(maxAge)

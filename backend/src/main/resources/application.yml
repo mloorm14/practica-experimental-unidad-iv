@@ -33,6 +33,12 @@ jwt:
   secret: ${JWT_SECRET}
   expiration-minutes: ${JWT_EXPIRATION_MINUTES:15}
 
+app:
+  cookie:
+    # Secure=true por defecto (produccion sobre HTTPS). Solo se debe overridear a false
+    # via COOKIE_SECURE en el .env de desarrollo local (docker-compose sobre HTTP plano).
+    secure: ${COOKIE_SECURE:true}
+
 management:
   endpoints:
     web:

@@ -1,0 +1,1391 @@
+{
+  "info": {
+    "_postman_id": "da2b4bdc-6bfc-4839-82f3-3cb1256c7b6a",
+    "name": "SGB API - Sistema de Gestion Bibliotecaria",
+    "description": "Coleccion Postman del backend del Sistema de Gestion Bibliotecaria (PFC - Practica Experimental Unidad IV). Todas las requests usan variables de coleccion {{base_url}} y {{token}} en vez de valores hardcodeados. Flujo recomendado: correr \"Auth > Login (admin)\" primero (llena {{token}} automaticamente desde la cookie HttpOnly va pm.cookies), luego el resto de carpetas. Las requests de creacion guardan el id creado en una variable de coleccion ({{libro_id}}, {{autor_id}}, etc.) para encadenar Obtener/Actualizar/Eliminar sobre el mismo registro.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Autentica contra el sistema. El JWT viaja en la cookie HttpOnly `access_token` (Set-Cookie); el script de test la extrae con pm.cookies y la guarda en la variable de coleccion {{token}} para reutilizarla como header `Authorization: Bearer {{token}}` en el resto de requests, ejercitando la extraccion dual soportada por JwtAuthenticationFilter (cookie o Bearer).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{admin_username}}\",\n  \"password\": \"{{admin_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "const token = pm.cookies.get('access_token');",
+                  "if (token) { pm.collectionVariables.set('token', token); }",
+                  "pm.test('Cookie access_token presente', function () { pm.expect(token).to.not.be.undefined; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Invalida el token actual agregando su jti a la blacklist de Redis (TTL = tiempo restante del token). Tras este request, reutilizar el mismo token en cualquier endpoint protegido debe devolver 401."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 204', function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Libros",
+      "item": [
+        {
+          "name": "Listar libros",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/libros?titulo=&page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "libros"
+              ],
+              "query": [
+                {
+                  "key": "titulo",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Listado paginado de libros, con filtro opcional ?titulo=. Endpoint con cache-aside (Redis, TTL 5 min)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Obtener libro por id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/libros/{{libro_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "libros",
+                "{{libro_id}}"
+              ]
+            },
+            "description": "Obtiene un libro por id."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Obtener libro enriquecido (Open Library)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/libros/{{libro_id}}/enriquecido",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "libros",
+                "{{libro_id}}",
+                "enriquecido"
+              ]
+            },
+            "description": "Combina el libro con portada, numero de paginas y descripcion obtenidos de Open Library (por ISBN). Si Open Library no responde, el endpoint igual devuelve 200 con los campos externos en null (nunca falla solo por el servicio externo)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear libro",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/libros",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "libros"
+              ]
+            },
+            "description": "Crea un libro. Requiere rol ADMIN. El campo `autor` (String libre) esta deprecado a favor de la relacion N:M con Autor, se mantiene por compatibilidad.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"El Aleph\",\n  \"descripcion\": \"Coleccion de cuentos de Jorge Luis Borges\",\n  \"isbn\": \"978-0-307-47569-9\",\n  \"genero\": \"Cuento\",\n  \"autor\": \"Jorge Luis Borges\",\n  \"anioPublicacion\": 1949,\n  \"editorialId\": 1,\n  \"idiomaId\": 1,\n  \"estadoId\": 1,\n  \"stock\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "if (json && json.data && json.data.id) { pm.collectionVariables.set('libro_id', json.data.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Actualizar libro",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/libros/{{libro_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "libros",
+                "{{libro_id}}"
+              ]
+            },
+            "description": "Actualiza un libro existente. Requiere rol ADMIN.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"El Aleph (edicion revisada)\",\n  \"descripcion\": \"Coleccion de cuentos de Jorge Luis Borges\",\n  \"isbn\": \"978-0-307-47569-9\",\n  \"genero\": \"Cuento\",\n  \"autor\": \"Jorge Luis Borges\",\n  \"anioPublicacion\": 1949,\n  \"editorialId\": 1,\n  \"idiomaId\": 1,\n  \"estadoId\": 1,\n  \"stock\": 8\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Eliminar libro",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/libros/{{libro_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "libros",
+                "{{libro_id}}"
+              ]
+            },
+            "description": "Elimina un libro. Requiere rol ADMIN."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 204', function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear libro sin autenticacion (esperado 401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/libros",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "libros"
+              ]
+            },
+            "description": "Request de ejemplo de error: intenta crear un libro SIN header Authorization. Spring Security rechaza la request antes de llegar al controlador -> 401. Ver el `response` guardado de ejemplo.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Intento sin token\",\n  \"isbn\": \"000-0-000-00000-0\",\n  \"autor\": \"Nadie\",\n  \"anioPublicacion\": 2024,\n  \"editorialId\": 1,\n  \"idiomaId\": 1,\n  \"estadoId\": 1,\n  \"stock\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "401 Unauthorized - sin token",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/libros",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "libros"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"titulo\": \"Intento sin token\",\n  \"isbn\": \"000-0-000-00000-0\",\n  \"autor\": \"Nadie\",\n  \"anioPublicacion\": 2024,\n  \"editorialId\": 1,\n  \"idiomaId\": 1,\n  \"estadoId\": 1,\n  \"stock\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/problem+json",
+                  "type": "text"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"type\": \"about:blank\",\n  \"title\": \"Unauthorized\",\n  \"status\": 401,\n  \"detail\": \"No autenticado\",\n  \"instance\": \"/api/v1/libros\"\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 401 sin token', function () { pm.response.to.have.status(401); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Autores",
+      "item": [
+        {
+          "name": "Listar autores",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/autores?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "autores"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Lista paginada de autores. Requiere autenticacion (cualquier rol)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Obtener autores por id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/autores/{{autor_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "autores",
+                "{{autor_id}}"
+              ]
+            },
+            "description": "Obtiene un registro de autores por id. Requiere autenticacion (cualquier rol)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear autore",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/autores",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "autores"
+              ]
+            },
+            "description": "Crea un nuevo registro de autores. Requiere rol ADMIN (@PreAuthorize).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Julio Cortazar\",\n  \"nacionalidad\": \"Argentina\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "if (json && json.data && json.data.id) { pm.collectionVariables.set('autor_id', json.data.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Actualizar autore",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/autores/{{autor_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "autores",
+                "{{autor_id}}"
+              ]
+            },
+            "description": "Actualiza un registro existente de autores. Requiere rol ADMIN.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Julio Cortazar\",\n  \"nacionalidad\": \"Argentina (naturalizado frances)\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Eliminar autore",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/autores/{{autor_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "autores",
+                "{{autor_id}}"
+              ]
+            },
+            "description": "Elimina un registro de autores. Requiere rol ADMIN."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 204', function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Editoriales",
+      "item": [
+        {
+          "name": "Listar editoriales",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/editoriales?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "editoriales"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Lista paginada de editoriales. Requiere autenticacion (cualquier rol)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Obtener editoriales por id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/editoriales/{{editorial_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "editoriales",
+                "{{editorial_id}}"
+              ]
+            },
+            "description": "Obtiene un registro de editoriales por id. Requiere autenticacion (cualquier rol)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear editoriale",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/editoriales",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "editoriales"
+              ]
+            },
+            "description": "Crea un nuevo registro de editoriales. Requiere rol ADMIN (@PreAuthorize).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Editorial Sudamericana\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "if (json && json.data && json.data.id) { pm.collectionVariables.set('editorial_id', json.data.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Actualizar editoriale",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/editoriales/{{editorial_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "editoriales",
+                "{{editorial_id}}"
+              ]
+            },
+            "description": "Actualiza un registro existente de editoriales. Requiere rol ADMIN.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Editorial Sudamericana S.A.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Eliminar editoriale",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/editoriales/{{editorial_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "editoriales",
+                "{{editorial_id}}"
+              ]
+            },
+            "description": "Elimina un registro de editoriales. Requiere rol ADMIN."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 204', function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Idiomas",
+      "item": [
+        {
+          "name": "Listar idiomas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/idiomas?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "idiomas"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Lista paginada de idiomas. Requiere autenticacion (cualquier rol)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Obtener idiomas por id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/idiomas/{{idioma_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "idiomas",
+                "{{idioma_id}}"
+              ]
+            },
+            "description": "Obtiene un registro de idiomas por id. Requiere autenticacion (cualquier rol)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear idioma",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/idiomas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "idiomas"
+              ]
+            },
+            "description": "Crea un nuevo registro de idiomas. Requiere rol ADMIN (@PreAuthorize).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Español\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "if (json && json.data && json.data.id) { pm.collectionVariables.set('idioma_id', json.data.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Actualizar idioma",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/idiomas/{{idioma_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "idiomas",
+                "{{idioma_id}}"
+              ]
+            },
+            "description": "Actualiza un registro existente de idiomas. Requiere rol ADMIN.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Espanol\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Eliminar idioma",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/idiomas/{{idioma_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "idiomas",
+                "{{idioma_id}}"
+              ]
+            },
+            "description": "Elimina un registro de idiomas. Requiere rol ADMIN."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 204', function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Estados de Libro",
+      "item": [
+        {
+          "name": "Listar estados de libro",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/estados-libro?page=0&size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "estados-libro"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Lista paginada de estados de libro. Requiere autenticacion (cualquier rol)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Obtener estados de libro por id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/estados-libro/{{estado_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "estados-libro",
+                "{{estado_id}}"
+              ]
+            },
+            "description": "Obtiene un registro de estados de libro por id. Requiere autenticacion (cualquier rol)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear estados de libro",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/estados-libro",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "estados-libro"
+              ]
+            },
+            "description": "Crea un nuevo registro de estados de libro. Requiere rol ADMIN (@PreAuthorize).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Disponible\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "if (json && json.data && json.data.id) { pm.collectionVariables.set('estado_id', json.data.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Actualizar estados de libro",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/estados-libro/{{estado_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "estados-libro",
+                "{{estado_id}}"
+              ]
+            },
+            "description": "Actualiza un registro existente de estados de libro. Requiere rol ADMIN.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Disponible (actualizado)\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Eliminar estados de libro",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/estados-libro/{{estado_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "estados-libro",
+                "{{estado_id}}"
+              ]
+            },
+            "description": "Elimina un registro de estados de libro. Requiere rol ADMIN."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 204', function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "admin_username",
+      "value": "admin",
+      "type": "string"
+    },
+    {
+      "key": "admin_password",
+      "value": "Admin123!",
+      "type": "string"
+    },
+    {
+      "key": "libro_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "autor_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "editorial_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "idioma_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "estado_id",
+      "value": "1",
+      "type": "string"
+    }
+  ]
+}
