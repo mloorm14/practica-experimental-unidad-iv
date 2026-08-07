@@ -7,11 +7,15 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -43,11 +47,24 @@ public class Libro {
     @Column(length = 100)
     private String genero;
 
+    // @deprecated Nombre libre de autor; se mantiene por compatibilidad con el frontend
+    // actual, que aun lo consume directamente. La relacion real vive en "autores" (N:M),
+    // migrada en V8__crear_tabla_autores.sql. No eliminar sin confirmacion explicita.
+    @Deprecated
     @Column(length = 150)
     private String autor;
 
     @Column(name = "anio_publicacion")
     private Integer anioPublicacion;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "libro_autor",
+            joinColumns = @JoinColumn(name = "libro_id"),
+            inverseJoinColumns = @JoinColumn(name = "autor_id")
+    )
+    @Builder.Default
+    private Set<Autor> autores = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "editorial_id", nullable = false)
