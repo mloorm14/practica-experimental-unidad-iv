@@ -1,6 +1,7 @@
 package ec.edu.uteq.pfcbackend.controller;
 
 import ec.edu.uteq.pfcbackend.dto.ApiResponse;
+import ec.edu.uteq.pfcbackend.dto.LibroEnriquecidoResponse;
 import ec.edu.uteq.pfcbackend.dto.LibroRequest;
 import ec.edu.uteq.pfcbackend.dto.LibroResponse;
 import ec.edu.uteq.pfcbackend.service.LibroService;
@@ -50,6 +51,18 @@ public class LibroController {
     @Operation(summary = "Obtener un libro por id")
     public ApiResponse<LibroResponse> obtenerPorId(@PathVariable Long id) {
         return ApiResponse.success(libroService.obtenerPorId(id));
+    }
+
+    @GetMapping("/{id}/enriquecido")
+    @Operation(
+            summary = "Obtener un libro con metadatos externos de Open Library",
+            description = "Combina el libro con portada, numero de paginas y descripcion obtenidos de "
+                    + "Open Library buscando por ISBN. Si Open Library no tiene el ISBN o no responde "
+                    + "(caido, timeout), la respuesta sigue siendo 200 con el libro base y los campos "
+                    + "externos en null - este endpoint nunca falla solo por Open Library."
+    )
+    public ApiResponse<LibroEnriquecidoResponse> obtenerEnriquecido(@PathVariable Long id) {
+        return ApiResponse.success(libroService.obtenerEnriquecido(id));
     }
 
     @PostMapping

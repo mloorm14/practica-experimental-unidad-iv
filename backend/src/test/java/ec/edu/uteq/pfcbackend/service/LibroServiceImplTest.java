@@ -1,7 +1,11 @@
 package ec.edu.uteq.pfcbackend.service;
 
+import ec.edu.uteq.pfcbackend.client.OpenLibraryClient;
+import ec.edu.uteq.pfcbackend.client.OpenLibraryResult;
+import ec.edu.uteq.pfcbackend.dto.LibroEnriquecidoResponse;
 import ec.edu.uteq.pfcbackend.dto.LibroRequest;
 import ec.edu.uteq.pfcbackend.dto.LibroResponse;
+import ec.edu.uteq.pfcbackend.dto.OpenLibraryResponse;
 import ec.edu.uteq.pfcbackend.entity.Editorial;
 import ec.edu.uteq.pfcbackend.entity.EstadoLibro;
 import ec.edu.uteq.pfcbackend.entity.Idioma;
@@ -49,6 +53,9 @@ class LibroServiceImplTest {
 
     @Mock
     private EstadoLibroRepository estadoLibroRepository;
+
+    @Mock
+    private OpenLibraryClient openLibraryClient;
 
     @InjectMocks
     private LibroServiceImpl libroService;
@@ -117,6 +124,56 @@ class LibroServiceImplTest {
         assertThatThrownBy(() -> libroService.obtenerPorId(999L))
                 .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("999");
+    }
+
+    @Test
+    void obtenerEnriquecidoCombinaLibroYDatosDeOpenLibrarySiSeEncuentra() {
+        OpenLibraryResponse datos = new OpenLibraryResponse(
+                "Cien años de soledad", "Descripcion de prueba", 471, List.of(123L));
+
+        when(libroRepository.findById(1L)).thenReturn(Optional.of(libroExistente));
+        when(openLibraryClient.buscarPorIsbn(libroExistente.getIsbn()))
+                .thenReturn(new OpenLibraryResult.Encontrado(datos));
+
+        LibroEnriquecidoResponse resultado = libroService.obtenerEnriquecido(1L);
+
+        assertThat(resultado.libro().id()).isEqualTo(1L);
+        assertThat(resultado.tituloOpenLibrary()).isEqualTo("Cien años de soledad");
+        assertThat(resultado.numeroPaginas()).isEqualTo(471);
+        assertThat(resultado.coverUrl()).isEqualTo("https://covers.openlibrary.org/b/id/123-M.jpg");
+    }
+
+    @Test
+    void obtenerEnriquecidoDevuelveSoloElLibroSiOpenLibraryNoEncuentraElIsbn() {
+        when(libroRepository.findById(1L)).thenReturn(Optional.of(libroExistente));
+        when(openLibraryClient.buscarPorIsbn(libroExistente.getIsbn()))
+                .thenReturn(new OpenLibraryResult.NoEncontrado());
+
+        LibroEnriquecidoResponse resultado = libroService.obtenerEnriquecido(1L);
+
+        assertThat(resultado.libro().id()).isEqualTo(1L);
+        assertThat(resultado.tituloOpenLibrary()).isNull();
+        assertThat(resultado.coverUrl()).isNull();
+    }
+
+    @Test
+    void obtenerEnriquecidoDevuelveSoloElLibroSiOpenLibraryNoResponde() {
+        when(libroRepository.findById(1L)).thenReturn(Optional.of(libroExistente));
+        when(openLibraryClient.buscarPorIsbn(libroExistente.getIsbn()))
+                .thenReturn(new OpenLibraryResult.ServicioNoDisponible());
+
+        LibroEnriquecidoResponse resultado = libroService.obtenerEnriquecido(1L);
+
+        assertThat(resultado.libro().id()).isEqualTo(1L);
+        assertThat(resultado.descripcionOpenLibrary()).isNull();
+    }
+
+    @Test
+    void obtenerEnriquecidoLanzaExcepcionSiElLibroNoExiste() {
+        when(libroRepository.findById(999L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> libroService.obtenerEnriquecido(999L))
+                .isInstanceOf(ResourceNotFoundException.class);
     }
 
     @Test

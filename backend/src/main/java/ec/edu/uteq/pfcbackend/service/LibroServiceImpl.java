@@ -1,8 +1,12 @@
 package ec.edu.uteq.pfcbackend.service;
 
+import ec.edu.uteq.pfcbackend.client.OpenLibraryClient;
+import ec.edu.uteq.pfcbackend.client.OpenLibraryResult;
 import ec.edu.uteq.pfcbackend.config.CacheablePage;
+import ec.edu.uteq.pfcbackend.dto.LibroEnriquecidoResponse;
 import ec.edu.uteq.pfcbackend.dto.LibroRequest;
 import ec.edu.uteq.pfcbackend.dto.LibroResponse;
+import ec.edu.uteq.pfcbackend.dto.OpenLibraryResponse;
 import ec.edu.uteq.pfcbackend.entity.Editorial;
 import ec.edu.uteq.pfcbackend.entity.EstadoLibro;
 import ec.edu.uteq.pfcbackend.entity.Idioma;
@@ -32,6 +36,7 @@ public class LibroServiceImpl implements LibroService {
     private final EditorialRepository editorialRepository;
     private final IdiomaRepository idiomaRepository;
     private final EstadoLibroRepository estadoLibroRepository;
+    private final OpenLibraryClient openLibraryClient;
 
     @Override
     @Cacheable(value = CACHE_LISTADO, key = "#titulo + '-' + #pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort.toString()")
@@ -50,6 +55,27 @@ public class LibroServiceImpl implements LibroService {
     @Override
     public LibroResponse obtenerPorId(Long id) {
         return aResponse(buscarOFallar(id));
+    }
+
+    @Override
+    public LibroEnriquecidoResponse obtenerEnriquecido(Long id) {
+        Libro libro = buscarOFallar(id);
+        LibroResponse libroResponse = aResponse(libro);
+
+        OpenLibraryResult resultado = openLibraryClient.buscarPorIsbn(libro.getIsbn());
+
+        if (resultado instanceof OpenLibraryResult.Encontrado encontrado) {
+            OpenLibraryResponse datos = encontrado.datos();
+            return new LibroEnriquecidoResponse(
+                    libroResponse,
+                    datos.title(),
+                    datos.coverUrl(),
+                    datos.numeroPaginas(),
+                    datos.description()
+            );
+        }
+
+        return new LibroEnriquecidoResponse(libroResponse, null, null, null, null);
     }
 
     @Override
