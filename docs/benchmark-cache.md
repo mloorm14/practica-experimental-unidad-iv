@@ -47,20 +47,29 @@ Se calculan, para cada escenario y cada uno de los dos bloques de datos (con tod
 - Desviación estándar muestral: s = √[ Σ(xᵢ − x̄)² / (n − 1) ]
 - Error estándar de la media: SE = s / √n
 - Intervalo de confianza 95%: x̄ ± t(0.025, gl) · SE, con gl = n − 1
+- Percentil 95 (P95): interpolación lineal tipo Hyndman-Fan 7 (método por defecto de `numpy.percentile`/`pandas.quantile`), sobre los datos ordenados xₛₒᵣₜ. Con posición 0-indexada h = (95/100)·(n − 1): P95 = xₛₒᵣₜ[⌊h⌋] + (h − ⌊h⌋) · (xₛₒᵣₜ[⌈h⌉] − xₛₒᵣₜ[⌊h⌋])
 
 ### Bloque 1 — Con todos los datos (incluye arranque en frío), n = 10, gl = 9, t crítico = 2.262
 
-| Escenario | x̄ (ms) | s (ms) | SE = s/√n (ms) | Margen = t·SE (ms) | IC 95% |
-|---|---|---|---|---|---|
-| Sin cache | 56.15 | 131.07 | 41.45 | 93.76 | (−37.61, 149.90) |
-| Con cache | 10.58 | 6.21 | 1.96 | 4.44 | (6.14, 15.02) |
+| Escenario | x̄ (ms) | s (ms) | SE = s/√n (ms) | Margen = t·SE (ms) | IC 95% | P95 (ms) |
+|---|---|---|---|---|---|---|
+| Sin cache | 56.15 | 131.07 | 41.45 | 93.76 | (−37.61, 149.90) | 244.17 |
+| Con cache | 10.58 | 6.21 | 1.96 | 4.44 | (6.14, 15.02) | 19.98 |
+
+Cálculo del P95 (Bloque 1, n = 10): h = 0.95 · 9 = 8.55 → posiciones 0-indexadas 8 y 9 del arreglo ordenado, fracción 0.55.
+- Sin cache ordenado: [13.25, 13.31, 13.70, 14.27, 14.64, 14.80, 14.88, 15.37, 18.06, 429.17] → P95 = 18.06 + 0.55·(429.17 − 18.06) = **244.17 ms**
+- Con cache ordenado: [7.34, 7.43, 7.85, 8.40, 8.47, 8.75, 9.45, 9.90, 10.15, 28.03] → P95 = 10.15 + 0.55·(28.03 − 10.15) = **19.98 ms**
 
 ### Bloque 2 — Excluyendo la 1ª repetición de cada bloque, n = 9, gl = 8, t crítico = 2.306
 
-| Escenario | x̄ (ms) | s (ms) | SE = s/√n (ms) | Margen = t·SE (ms) | IC 95% |
-|---|---|---|---|---|---|
-| Sin cache | 14.70 | 1.46 | 0.486 | 1.12 | (13.58, 15.82) |
-| Con cache | 8.64 | 1.02 | 0.342 | 0.79 | (7.85, 9.43) |
+| Escenario | x̄ (ms) | s (ms) | SE = s/√n (ms) | Margen = t·SE (ms) | IC 95% | P95 (ms) |
+|---|---|---|---|---|---|---|
+| Sin cache | 14.70 | 1.46 | 0.486 | 1.12 | (13.58, 15.82) | 16.98 |
+| Con cache | 8.64 | 1.02 | 0.342 | 0.79 | (7.85, 9.43) | 10.05 |
+
+Cálculo del P95 (Bloque 2, n = 9): h = 0.95 · 8 = 7.6 → posiciones 0-indexadas 7 y 8 del arreglo ordenado, fracción 0.6.
+- Sin cache ordenado: [13.25, 13.31, 13.70, 14.27, 14.64, 14.80, 14.88, 15.37, 18.06] → P95 = 15.37 + 0.6·(18.06 − 15.37) = **16.98 ms**
+- Con cache ordenado: [7.34, 7.43, 7.85, 8.40, 8.47, 8.75, 9.45, 9.90, 10.15] → P95 = 9.90 + 0.6·(10.15 − 9.90) = **10.05 ms**
 
 **Interpretación del solapamiento de los IC:**
 
