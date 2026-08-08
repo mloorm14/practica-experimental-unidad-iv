@@ -1,3 +1,5 @@
+> **DOCUMENTO HISTORICO (Unidad III).** Se conserva como referencia del trabajo ya entregado y calificado. Para el estado actual del proyecto ver los documentos equivalentes de la Unidad IV en esta misma carpeta.
+
 # Guía de continuidad del equipo
 
 Este documento está dirigido a cualquier persona (o IA asistente, como Claude Code) que se incorpore a este repositorio sin haber estado en las conversaciones previas del equipo. Es autocontenido: no necesitas contexto externo para entender el estado del proyecto y qué falta por hacer.

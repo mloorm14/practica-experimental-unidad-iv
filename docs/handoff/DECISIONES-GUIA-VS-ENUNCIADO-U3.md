@@ -1,3 +1,5 @@
+> **DOCUMENTO HISTORICO (Unidad III).** Se conserva como referencia del trabajo ya entregado y calificado. Para el estado actual del proyecto ver los documentos equivalentes de la Unidad IV en esta misma carpeta.
+
 # Análisis de incoherencias: Guía de Práctica vs. Enunciado de Tarea
 
 Este documento registra las diferencias detectadas entre la guía de práctica general del curso y el enunciado puntual de esta tarea, y cómo se resolvió cada una. Sirve como referencia si algo en el código o en la documentación no parece coincidir con lo que dice la guía marco del curso: la resolución ya fue tomada y está justificada aquí.
