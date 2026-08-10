@@ -1,0 +1,46 @@
+<div class="autores-container">
+  <div class="header">
+    <h1>Autores</h1>
+    @if (esAdmin()) {
+      <a routerLink="/autores/nuevo">Nuevo autor</a>
+    }
+  </div>
+
+  @if (cargando()) {
+    <p>Cargando...</p>
+  } @else {
+    <table>
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Nacionalidad</th>
+          @if (esAdmin()) {
+            <th>Acciones</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (autor of autores(); track autor.id) {
+          <tr>
+            <td>{{ autor.nombre }}</td>
+            <td>{{ autor.nacionalidad }}</td>
+            @if (esAdmin()) {
+              <td>
+                <a [routerLink]="['/autores', autor.id, 'editar']">Editar</a>
+                <button (click)="eliminar(autor.id)">Eliminar</button>
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <div class="paginacion">
+      <button (click)="paginaAnterior()" [disabled]="paginaActual() === 0">Anterior</button>
+      <span>Página {{ paginaActual() + 1 }} de {{ totalPaginas() }}</span>
+      <button (click)="siguientePagina()" [disabled]="paginaActual() + 1 >= totalPaginas()">
+        Siguiente
+      </button>
+    </div>
+  }
+</div>
