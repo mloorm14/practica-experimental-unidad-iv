@@ -5,6 +5,7 @@ import { map } from 'rxjs/operators';
 
 import { environment } from '../../../environments/environment';
 import { Libro, PageResponse } from '../models/libro.model';
+import { LibroEnriquecido } from '../models/libro-enriquecido.model';
 import { ApiResponse } from '../models/api-response.model';
 
 export type LibroRequest = Omit<Libro, 'id' | 'createdAt' | 'updatedAt'>;
@@ -14,26 +15,28 @@ export class LibroService {
   constructor(private http: HttpClient) {}
 
   listar(pagina: number = 0, tamanio: number = 10): Observable<PageResponse<Libro>> {
-    const params = new HttpParams()
-      .set('page', pagina)
-      .set('size', tamanio);
+    const params = new HttpParams().set('page', pagina).set('size', tamanio);
 
-    return this.http
-      .get<ApiResponse<Libro[]>>(`${environment.apiUrl}/libros`, { params })
-      .pipe(
-        map((respuesta) => ({
-          content: respuesta.data,
-          totalElements: Number(respuesta.meta['total'] ?? 0),
-          totalPages: Number(respuesta.meta['last_page'] ?? 0),
-          number: Number(respuesta.meta['current_page'] ?? 0),
-          size: tamanio,
-        })),
-      );
+    return this.http.get<ApiResponse<Libro[]>>(`${environment.apiUrl}/libros`, { params }).pipe(
+      map((respuesta) => ({
+        content: respuesta.data,
+        totalElements: Number(respuesta.meta['total'] ?? 0),
+        totalPages: Number(respuesta.meta['last_page'] ?? 0),
+        number: Number(respuesta.meta['current_page'] ?? 0),
+        size: tamanio,
+      })),
+    );
   }
 
   obtenerPorId(id: number): Observable<Libro> {
     return this.http
       .get<ApiResponse<Libro>>(`${environment.apiUrl}/libros/${id}`)
+      .pipe(map((respuesta) => respuesta.data));
+  }
+
+  obtenerEnriquecido(id: number): Observable<LibroEnriquecido> {
+    return this.http
+      .get<ApiResponse<LibroEnriquecido>>(`${environment.apiUrl}/libros/${id}/enriquecido`)
       .pipe(map((respuesta) => respuesta.data));
   }
 
