@@ -1,10 +1,9 @@
 # Auditoría Lighthouse — Frontend Angular (Unidad IV)
 
-Reporte generado con **Lighthouse** sobre el build de producción del frontend Angular.
+Reporte generado con **Lighthouse** sobre la app dockerizada corriendo en `http://localhost/` (stack completo del `docker-compose.yml`: postgres, redis, backend Spring Boot, frontend Angular servido por Nginx y nginx reverse proxy).
 
-- URL auditada: `http://localhost:8080/login` (redirección SPA desde `/`).
+- URL auditada: `http://localhost/login` (redirección SPA desde `/`).
 - Fecha: 2026-08-10.
-- Entorno: build de producción servido localmente (`frontend/dist/frontend/browser`), porque el daemon de Docker no estaba levantado en la máquina de trabajo para auditar `http://localhost/` a través del stack completo.
 
 ## Puntajes obtenidos
 
@@ -20,7 +19,14 @@ Reporte generado con **Lighthouse** sobre el build de producción del frontend A
 - `lighthouse.report.json` — reporte completo en formato JSON.
 - `lighthouse.report.html` — reporte visual navegable en el navegador.
 
+## Reproducción
+
+```bash
+docker compose up -d --build
+npx lighthouse http://localhost/ --output=html --output-path=lighthouse.report.html
+```
+
 ## Notas
 
-- La auditoría se corrió contra la app ya dockerizable (mismo `dist` que sirve el contenedor `frontend` del `docker-compose.yml`), con el service worker de PWA activo (`ngsw.json`, `ngsw-worker.js` y `manifest.webmanifest` incluidos en el build).
-- Para reproducir con el stack completo: `docker compose up -d --build` y `npx lighthouse http://localhost/ --output=html --output-path=lighthouse.report.html`.
+- El service worker de PWA (`ngsw.json`, `ngsw-worker.js` y `manifest.webmanifest`) se sirve correctamente a través del reverse proxy, verificado en la misma corrida.
+- La categoría "Agentic Browsing" (0.67) es nueva en Lighthouse 12 y mide aptitudes de autónomo/navegación; no forma parte de las 4 categorías exigidas por el curso.
