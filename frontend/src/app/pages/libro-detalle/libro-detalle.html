@@ -1,0 +1,57 @@
+<div class="detalle-container">
+  @if (cargando()) {
+    <p>Cargando...</p>
+  } @else if (error()) {
+    <p>No se pudo cargar el detalle del libro.</p>
+  } @else if (enriquecido(); as detalle) {
+    <div class="header">
+      <h1>{{ detalle.libro.titulo }}</h1>
+      <a routerLink="/libros">Volver a libros</a>
+    </div>
+
+    <div class="cuerpo">
+      <div class="datos-libro">
+        <h2>Datos del libro</h2>
+        <dl>
+          <dt>ISBN</dt>
+          <dd>{{ detalle.libro.isbn }}</dd>
+          <dt>Autor</dt>
+          <dd>{{ detalle.libro.autor }}</dd>
+          <dt>Año de publicación</dt>
+          <dd>{{ detalle.libro.anioPublicacion }}</dd>
+          <dt>Género</dt>
+          <dd>{{ detalle.libro.genero }}</dd>
+          <dt>Editorial</dt>
+          <dd>{{ detalle.libro.editorial }}</dd>
+          <dt>Idioma</dt>
+          <dd>{{ detalle.libro.idioma }}</dd>
+          <dt>Estado</dt>
+          <dd>{{ detalle.libro.estado }}</dd>
+          <dt>Stock</dt>
+          <dd>{{ detalle.libro.stock }}</dd>
+          <dt>Descripción</dt>
+          <dd>{{ detalle.libro.descripcion }}</dd>
+        </dl>
+      </div>
+
+      <div class="datos-open-library">
+        <h2>Información de Open Library</h2>
+
+        @if (detalle.coverUrl; as coverUrl) {
+          <img class="portada" [src]="coverUrl" alt="Portada del libro" />
+        } @else {
+          <p class="placeholder">Portada no disponible.</p>
+        }
+
+        <dl>
+          <dt>Título</dt>
+          <dd>{{ detalle.tituloOpenLibrary ?? 'No disponible' }}</dd>
+          <dt>Número de páginas</dt>
+          <dd>{{ detalle.numeroPaginas ?? 'No disponible' }}</dd>
+          <dt>Descripción</dt>
+          <dd>{{ detalle.descripcionOpenLibrary ?? 'No disponible' }}</dd>
+        </dl>
+      </div>
+    </div>
+  }
+</div>

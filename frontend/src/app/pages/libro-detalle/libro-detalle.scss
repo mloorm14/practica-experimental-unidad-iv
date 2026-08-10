@@ -1,0 +1,43 @@
+.detalle-container {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .cuerpo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+
+    dl {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.5rem 1rem;
+
+      dt {
+        font-weight: bold;
+      }
+
+      dd {
+        margin: 0;
+      }
+    }
+  }
+
+  .portada {
+    max-width: 200px;
+    max-height: 300px;
+    margin-bottom: 1rem;
+  }
+
+  .placeholder {
+    font-style: italic;
+    color: #888;
+  }
+}
