@@ -14,10 +14,4 @@ export interface Libro {
   updatedAt: string;
 }
 
-export interface PageResponse<T> {
-  content: T[];
-  totalElements: number;
-  totalPages: number;
-  number: number;
-  size: number;
-}
+export type { PageResponse } from './page-response.model';
