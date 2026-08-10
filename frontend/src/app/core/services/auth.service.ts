@@ -32,4 +32,8 @@ export class AuthService {
   estaAutenticado(): boolean {
     return this.usuarioActual() !== null;
   }
+
+  esAdmin(): boolean {
+    return this.usuarioActual()?.rol === 'ADMIN';
+  }
 }
