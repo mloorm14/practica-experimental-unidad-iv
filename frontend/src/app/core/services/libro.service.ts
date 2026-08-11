@@ -8,7 +8,23 @@ import { Libro, PageResponse } from '../models/libro.model';
 import { LibroEnriquecido } from '../models/libro-enriquecido.model';
 import { ApiResponse } from '../models/api-response.model';
 
-export type LibroRequest = Omit<Libro, 'id' | 'createdAt' | 'updatedAt'>;
+// No se deriva de Libro (Omit<Libro, ...>): el shape de escritura del formulario
+// (editorial/idioma/estado como texto libre) es una limitacion preexistente del
+// formulario de creacion/edicion, distinta del shape de lectura real del backend
+// (editorialId/editorialNombre, etc.) que Libro ahora refleja correctamente. No se
+// corrige aqui: es un problema separado del formulario, fuera del alcance de este fix.
+export interface LibroRequest {
+  titulo: string;
+  descripcion: string;
+  isbn: string;
+  genero: string;
+  autor: string;
+  anioPublicacion: number;
+  editorial: string;
+  idioma: string;
+  estado: string;
+  stock: number;
+}
 
 @Injectable({ providedIn: 'root' })
 export class LibroService {
