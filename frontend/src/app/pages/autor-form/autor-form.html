@@ -1,0 +1,18 @@
+<div class="form-container">
+  <h1>{{ esEdicion() ? 'Editar autor' : 'Nuevo autor' }}</h1>
+
+  <form (ngSubmit)="onSubmit()">
+    <label>
+      Nombre
+      <input type="text" name="nombre" [(ngModel)]="form.nombre" required />
+    </label>
+    <label>
+      Nacionalidad
+      <input type="text" name="nacionalidad" [(ngModel)]="form.nacionalidad" />
+    </label>
+
+    <button type="submit" [disabled]="guardando()">
+      {{ guardando() ? 'Guardando...' : 'Guardar' }}
+    </button>
+  </form>
+</div>

@@ -1,78 +1,78 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { LibroService } from '../../core/services/libro.service';
+import { AutorService } from '../../core/services/autor.service';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
-import { Libro } from '../../core/models/libro.model';
+import { Autor } from '../../core/models/autor.model';
 
 @Component({
-  selector: 'app-libros',
+  selector: 'app-autores',
   standalone: true,
   imports: [RouterLink],
-  templateUrl: './libros.html',
-  styleUrl: './libros.scss',
+  templateUrl: './autores.html',
+  styleUrl: './autores.scss',
 })
-export class Libros implements OnInit {
-  libros = signal<Libro[]>([]);
+export class Autores implements OnInit {
+  autores = signal<Autor[]>([]);
   cargando = signal(false);
   paginaActual = signal(0);
   totalPaginas = signal(0);
 
   constructor(
-    private libroService: LibroService,
+    private autorService: AutorService,
     private authService: AuthService,
     private notificationService: NotificationService,
   ) {}
 
   ngOnInit(): void {
-    this.cargarLibros();
+    this.cargarAutores();
   }
 
   esAdmin(): boolean {
     return this.authService.esAdmin();
   }
 
-  cargarLibros(): void {
+  cargarAutores(): void {
     this.cargando.set(true);
-    this.libroService.listar(this.paginaActual()).subscribe({
+    this.autorService.listar(this.paginaActual()).subscribe({
       next: (respuesta) => {
-        this.libros.set(respuesta.content);
+        this.autores.set(respuesta.content);
         this.totalPaginas.set(respuesta.totalPages);
         this.cargando.set(false);
       },
       error: () => {
         this.cargando.set(false);
-        this.notificationService.mostrarError('No se pudieron cargar los libros.');
+        this.notificationService.mostrarError('No se pudieron cargar los autores.');
       },
     });
   }
 
   eliminar(id: number): void {
-    if (!confirm('¿Seguro que deseas eliminar este libro?')) {
+    if (!confirm('¿Seguro que deseas eliminar este autor?')) {
       return;
     }
 
-    this.libroService.eliminar(id).subscribe({
+    this.autorService.eliminar(id).subscribe({
       next: () => {
-        this.notificationService.mostrarExito('Libro eliminado correctamente.');
-        this.cargarLibros();
+        this.notificationService.mostrarExito('Autor eliminado correctamente.');
+        this.cargarAutores();
       },
-      error: () => this.notificationService.mostrarError('No se pudo eliminar el libro.'),
+      error: () => this.notificationService.mostrarError('No se pudo eliminar el autor.'),
     });
   }
 
   siguientePagina(): void {
     if (this.paginaActual() + 1 < this.totalPaginas()) {
       this.paginaActual.set(this.paginaActual() + 1);
-      this.cargarLibros();
+      this.cargarAutores();
     }
   }
 
   paginaAnterior(): void {
     if (this.paginaActual() > 0) {
       this.paginaActual.set(this.paginaActual() - 1);
-      this.cargarLibros();
+      this.cargarAutores();
     }
   }
 }

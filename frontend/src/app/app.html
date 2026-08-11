@@ -1,2 +1,9 @@
+@if (estaAutenticado()) {
+  <nav class="navegacion">
+    <a routerLink="/libros" routerLinkActive="activo">Libros</a>
+    <a routerLink="/autores" routerLinkActive="activo">Autores</a>
+    <button class="logout" (click)="cerrarSesion()">Cerrar sesión</button>
+  </nav>
+}
 <app-notification-banner />
 <router-outlet />
