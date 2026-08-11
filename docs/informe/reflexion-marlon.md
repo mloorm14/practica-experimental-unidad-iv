@@ -1,7 +1,5 @@
 # Reflexión individual — Marlon Loor Medranda (tech lead / backend / infraestructura)
 
-> Borrador para la sección 5.4 del informe técnico final de la Unidad IV. Basado en hechos reales de este repositorio, para que Marlon lo revise, corrija y ajuste como reflexión personal propia antes de incorporarlo al documento final. No es una versión final ni una redacción ajena a la que él deba someterse tal cual.
-
 A lo largo de este proyecto tuve que corregir tres errores propios que, revisados en retrospectiva, dejan lecciones más útiles que cualquier cosa que hubiera aprendido si todo hubiese salido bien a la primera.
 
 El primero fue un login roto en producción local, causado por versionar la API a `/api/v1` sin actualizar en el mismo cambio los matchers de `SecurityConfig`, que seguían apuntando a las rutas sin versionar (commit `8e73f02`). El síntoma no apareció en ningún test unitario ni de compilación: apareció al probar el flujo real en vivo, porque `SecurityConfig` y los controladores viven en archivos distintos y nada obliga a que cambien juntos. La lección no es "tener cuidado", que es inútil como lección porque no es accionable — es que un cambio de contrato de API (una ruta, un prefijo, un nombre de campo expuesto) toca más superficie de la que el diff muestra a primera vista, y que verificar en vivo después de cada cambio estructural — no solo correr los tests — no es un paso opcional ni redundante, incluso cuando "solo" se está agregando un prefijo de versión.

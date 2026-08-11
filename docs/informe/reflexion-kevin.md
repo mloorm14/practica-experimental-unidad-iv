@@ -1,7 +1,5 @@
 # Reflexión individual — Castro Espinoza Kevin Moisés (frontend, Unidad IV)
 
-> Borrador para la sección de reflexión individual del informe técnico final de la Unidad IV. Basado en hechos reales de este repositorio, escrito en primera persona por Kevin.
-
 Mi parte de esta unidad fue el frontend Angular: implementar el CRUD de Autor, integrar Open Library en la vista de detalle, condicionar la UI por rol y convertir la app en PWA. El primer tropiezo fue técnico y muy concreto: al extraer la interfaz `PageResponse` a un modelo compartido para reutilizarla entre `libro.service.ts` y el nuevo `autor.service.ts`, el build falló con `TS1205` porque el proyecto usa `isolatedModules` y TypeScript exige `export type` al re-exportar tipos. Fue un recordatorio directo de que "copiar el patrón" de un archivo existente no basta si no se entiende la configuración del compilador que lo sostiene.
 
 Aprender a desenvolver el `ApiResponse` con `.pipe(map(r => r.data))` en cada método, tal como ya hacía `libro.service.ts`, me dejó claro por qué el contrato del backend (envelope en éxito, `ProblemDetail` en error) se traduce en que el componente nunca ve el JSON crudo. También entendí el punto de la guía sobre los campos de Open Library que pueden venir `null`: el DTO `LibroEnriquecidoResponse` documenta que si el ISBN no existe en Open Library la respuesta sigue siendo 200, y la vista debía manejar ese caso con placeholders en vez de romperse.

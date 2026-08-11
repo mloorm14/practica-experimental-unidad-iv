@@ -1,0 +1,1397 @@
+% ============================================================================
+% INFORME TECNICO - PRACTICA EXPERIMENTAL UNIDAD IV
+% Equipo D - Aplicaciones Web
+% ============================================================================
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-tabla]{babel}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{listings}
+\usepackage{textcomp}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{colorlinks=true, urlcolor=blue, linkcolor=blue, citecolor=blue}
+\hypersetup{pdftitle={Practica Experimental Unidad IV -- Aplicaciones Web -- UTEQ}, pdfauthor={Equipo D -- UTEQ}}
+\urlstyle{same}
+
+\setlength{\parskip}{4pt}
+\setlength{\parindent}{1cm}
+
+% ---------------------------------------------------------------------------
+% Estilo para bloques de codigo (listings): recuadro con fondo, salto de linea
+% automatico y separacion del texto circundante
+% ---------------------------------------------------------------------------
+\definecolor{codebg}{RGB}{248,248,248}
+\definecolor{codeframe}{RGB}{170,170,170}
+\definecolor{codecomment}{RGB}{120,120,120}
+
+\lstdefinestyle{pfc-code}{%
+  basicstyle=\ttfamily\footnotesize,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  tabsize=2,
+  breaklines=true,
+  breakatwhitespace=true,
+  postbreak=\mbox{\textcolor{codeframe}{$\hookrightarrow$}\space},
+  frame=single,
+  framerule=0.4pt,
+  rulecolor=\color{codeframe},
+  backgroundcolor=\color{codebg},
+  xleftmargin=6pt,
+  xrightmargin=6pt,
+  aboveskip=10pt,
+  belowskip=10pt,
+  captionpos=b,
+  upquote=true
+}
+\lstset{style=pfc-code}
+
+% ---------------------------------------------------------------------------
+% Colores y badges de la caratula (Equipo D)
+% ---------------------------------------------------------------------------
+\definecolor{verdeuteq}{RGB}{0,92,47}
+\definecolor{verdelight}{RGB}{0,128,64}
+\definecolor{javacolor}{RGB}{200,95,20}
+\definecolor{angularcolor}{RGB}{195,0,47}
+\definecolor{postgrescolor}{RGB}{51,103,145}
+\definecolor{rediscolor}{RGB}{164,31,27}
+\definecolor{nginxcolor}{RGB}{0,150,57}
+
+\newcommand{\badgeJAVA}{\colorbox{javacolor}{\color{white}\small\bfseries\ Java 21 / Spring Boot 3.5.x\ }}
+\newcommand{\badgeAngular}{\colorbox{angularcolor}{\color{white}\small\bfseries\ Angular 17+\ }}
+\newcommand{\badgePostgres}{\colorbox{postgrescolor}{\color{white}\small\bfseries\ PostgreSQL 16\ }}
+\newcommand{\badgeRedis}{\colorbox{rediscolor}{\color{white}\small\bfseries\ Redis Cache/Blacklist\ }}
+\newcommand{\badgeNginx}{\colorbox{nginxcolor}{\color{white}\small\bfseries\ Docker / Nginx\ }}
+
+% Marca visible para partes que faltan por completar (se quita al cerrar el documento)
+\newcommand{\pendiente}[1]{%
+  \par\vspace{4pt}\noindent\textbf{\textcolor{red}{[PENDIENTE: #1]}}\par\vspace{4pt}}
+
+% Figura segura: si falta el archivo de imagen, muestra un recuadro y no rompe la compilacion
+\newcommand{\captura}[4]{%
+  \begin{figure}[H]
+    \centering
+    \IfFileExists{#1}{\includegraphics[width=#4]{#1}}{\fbox{\parbox{0.8\textwidth}{\centering Imagen pendiente de subir a Overleaf: \texttt{#1}}}}
+    \caption{#2}
+    \label{#3}
+  \end{figure}}
+
+\begin{document}
+% babel[spanish] activa "<" y ">" como shorthand de comillas guillemet («»),
+% lo que rompe genericos tipo Observable<ApiResponse<T>> dentro de \texttt.
+\shorthandoff{<>}
+
+% ---------------------------------------------------------------------------
+% PORTADA (Equipo D, con badges de tecnologia)
+% ---------------------------------------------------------------------------
+\begin{titlepage}
+\thispagestyle{empty}
+\centering
+\vspace*{0.5cm}
+{\large\bfseries Universidad Técnica Estatal de Quevedo (UTEQ)}\\[0.2cm]
+{\normalsize Facultad de Ciencias de la Computación}\\[0.1cm]
+{\normalsize Carrera de Ingeniería de Software (Rediseño)}\\[0.1cm]
+{\normalsize Asignatura: Aplicaciones Web --- Período académico 2026--2027}\\[1cm]
+\rule{0.9\linewidth}{1pt}\\[0.4cm]
+{\Large\bfseries\color{verdeuteq} Práctica Experimental --- Unidad IV}\\[0.2cm]
+{\normalsize\bfseries Modelo Vista Controlador y Servicios Web: API REST, JWT y Consumo de APIs Externas}\\[0.3cm]
+\rule{0.9\linewidth}{1pt}\\[0.6cm]
+\begin{center}
+\badgeJAVA\quad\badgeAngular\\[0.2cm]
+\badgePostgres\quad\badgeRedis\quad\badgeNginx\\[0.2cm]
+\end{center}
+\vspace{0.6cm}
+{\normalsize\bfseries Integrantes (Equipo D):}\\[0.1cm]
+Castro Espinoza Kevin Moisés\\
+Escudero Plaza María del Rosario\\
+Loor Medranda Marlon Taylor\\[0.6cm]
+{\normalsize\bfseries Docente:}\\
+Ing. Gleiston Cicerón Guerrero Ulloa\\[0.6cm]
+{\normalsize\bfseries Fecha de entrega:}\\
+Domingo, 9 de agosto de 2026\\[0.8cm]
+\textbf{Último Commit: Lunes 10 de agosto a las 23:55}\\
+{\normalsize\bfseries Repositorio del Proyecto (Rama: \texttt{main}):}\\[0.4cm]
+{\small
+\textbf{Enlace al repositorio oficial en GitHub:}\\
+\url{https://github.com/mloorm14/practica-experimental-unidad-iv}
+}\\[0.5cm]
+{\small SOFT-A --- 5to Nivel --- Práctica Experimental Unidad IV | Grupal}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ---------------------------------------------------------------------------
+% RESUMEN
+% ---------------------------------------------------------------------------
+\section*{Resumen}
+\addcontentsline{toc}{section}{Resumen}
+
+El presente trabajo describe la práctica experimental de la Unidad IV de Aplicaciones
+Web, desarrollada sobre un sistema de gestión bibliotecaria compuesto por un backend
+Spring Boot 3.5.16 (Java 21), un frontend Angular, PostgreSQL 16, Redis y una
+infraestructura de despliegue basada en Docker Compose y Nginx. Durante esta unidad el
+equipo implementó la versión final de la API REST bajo el prefijo \texttt{/api/v1}, un
+formato de respuesta uniforme (\texttt{ApiResponse}), el manejo de errores estandarizado
+con \texttt{ProblemDetail}, la autenticación con JWT firmado en HS384 almacenado en una
+cookie \texttt{HttpOnly}, la autorización por roles con \texttt{@PreAuthorize}, la
+integración con la API externa Open Library y un servicio SOAP contract-first para la
+consulta de libros por ISBN. Como verificación, el repositorio cuenta con 48 pruebas
+automáticas (unitarias, de repositorio y 12 nuevas de integración HTTP), una prueba de
+carga con Apache Bench que alcanzó 986.8 requests por segundo con cache caliente y una
+auditoría de seguridad sobre OWASP Top 10:2021 aplicada contra el código real.
+
+\textbf{Palabras clave:} API REST, JWT, Spring Boot, Testcontainers, SOAP, OpenAPI,
+seguridad, Docker.
+
+\section*{Abstract}
+\addcontentsline{toc}{section}{Abstract}
+
+This work describes the experimental practice of Unit IV of the Web Applications
+course, developed on a library management system made of a Spring Boot 3.5.16 backend
+(Java 21), an Angular frontend, PostgreSQL 16, Redis and a deployment infrastructure
+based on Docker Compose and Nginx. During this unit the team implemented the final
+version of the REST API under the \texttt{/api/v1} prefix, a uniform response format
+(\texttt{ApiResponse}), standardized error handling with \texttt{ProblemDetail}, JWT
+authentication signed in HS384 stored in an \texttt{HttpOnly} cookie, role-based
+authorization with \texttt{@PreAuthorize}, the integration with the external Open
+Library API and a contract-first SOAP service to look up books by ISBN. As
+verification, the repository has 48 automated tests (unit, repository and 12 new HTTP
+integration tests), a load test with Apache Bench that reached 986.8 requests per
+second with a warm cache and an OWASP Top 10:2021 security audit applied against the
+real code.
+
+\textbf{Keywords:} REST API, JWT, Spring Boot, Testcontainers, SOAP, OpenAPI,
+security, Docker.
+
+\newpage
+
+% ---------------------------------------------------------------------------
+% 1. INTRODUCCION
+% ---------------------------------------------------------------------------
+\section{Introducción}
+
+La práctica experimental de la Unidad IV continúa el sistema de gestión bibliotecaria
+iniciado en la Unidad III. El objetivo general del curso es que el equipo construya una
+aplicación web completa con arquitectura MVC, que exponga e integre servicios web REST
+y SOAP, y que documente su funcionamiento mediante diagramas de arquitectura y pruebas
+verificables.
+
+En esta unidad el trabajo se centró en consolidar el backend y cerrar los objetivos
+específicos pendientes. El backend quedó versionado bajo \texttt{/api/v1}, con un
+envelope de respuesta uniforme para las respuestas exitosas (\texttt{ApiResponse}) y
+\texttt{ProblemDetail} (RFC 7807) para los errores. Se completaron cinco recursos CRUD
+(Libro, Autor, Editorial, Idioma y EstadoLibro), la autenticación JWT en cookie
+\texttt{HttpOnly} con revocación de tokens mediante una blacklist de \texttt{jti} en
+Redis, la autorización por rol con \texttt{@PreAuthorize}, el consumo de la API externa
+Open Library con cache-aside y un servicio SOAP contract-first para consultar un libro
+por ISBN. El frontend Angular quedó conectado a la API, con login, listado paginado y
+CRUD de libros, y la aplicación se despliega completa con Docker Compose (cinco
+servicios) detrás de un reverse proxy Nginx.
+
+Este documento presenta el desarrollo realizado, las pruebas y resultados obtenidos, el
+marco teórico que sustenta las decisiones técnicas y la evidencia recopilada (prueba de
+carga, auditoría de seguridad y pruebas de integración). Al final se incluyen las
+reflexiones individuales del equipo, las conclusiones y el trabajo futuro.
+
+\newpage
+
+% ---------------------------------------------------------------------------
+% 2. DESARROLLO DEL PROYECTO
+% ---------------------------------------------------------------------------
+\section{Desarrollo del proyecto}
+
+El repositorio (\url{https://github.com/mloorm14/practica-experimental-unidad-iv})
+contiene todo el trabajo de las tres unidades. La Unidad IV se desarrolló sobre la rama
+\texttt{main}, con commits convencionales en español (formato
+\texttt{feat:/fix:/docs:}), siguiendo la guía interna del equipo que exige el
+\texttt{./mvnw -B clean verify} en verde antes de cada commit del backend.
+
+\subsection{Backend}
+
+El backend es una aplicación Spring Boot 3.5.16 sobre Java 21 (\hyperlink{ref:springboot}{Spring Boot, s.f.}), con las siguientes
+características implementadas y verificadas en el repositorio:
+
+\begin{itemize}[leftmargin=1.2cm]
+  \item \textbf{API versionada}: todos los endpoints viven bajo \texttt{/api/v1}.
+        (commit \texttt{e46b0b7}).
+  \item \textbf{Envelope uniforme}: las respuestas exitosas usan
+        \texttt{ApiResponse<T>} con los campos \texttt{success}, \texttt{data},
+        \texttt{message}, \texttt{errors} y \texttt{meta}. Los errores usan
+        \texttt{ProblemDetail}, gestionados de forma centralizada en
+        \texttt{GlobalExceptionHandler}.
+  \item \textbf{Autenticación JWT}: el token se firma con HMAC-SHA384 (\texttt{jjwt}),
+        viaja en una cookie \texttt{HttpOnly} con \texttt{SameSite=Strict} y también se
+        acepta por header \texttt{Authorization: Bearer} (filtro
+        \texttt{JwtAuthenticationFilter}).
+  \item \textbf{Revocación de sesión}: al hacer logout, el \texttt{jti} del token se
+        guarda en una blacklist de Redis con TTL igual a la vida restante del token
+        (\texttt{TokenBlacklistService}).
+  \item \textbf{Autenticación por rol}: las operaciones de escritura de los cinco
+        recursos usan \texttt{@PreAuthorize("hasRole('ADMIN')")}, con
+        \texttt{@EnableMethodSecurity} (\hyperlink{ref:springsecurity}{Spring Security, s.f.}).
+  \item \textbf{Cinco recursos CRUD}: Libro (con relación N:M hacia Autor), Autor,
+        Editorial, Idioma y EstadoLibro. La gestión del esquema se hace solo con
+        migraciones Flyway versionadas (\texttt{V1} a \texttt{V8}) y
+        \texttt{hibernate.ddl-auto: validate}.
+  \item \textbf{Integración externa}: \texttt{OpenLibraryClient} consulta la API de
+        Open Library por ISBN, con cache-aside de 24 horas en un namespace Redis
+        separado y un endpoint \texttt{GET /api/v1/libros/\{id\}/enriquecido} que nunca
+        falla si el servicio externo no responde.
+  \item \textbf{Servicio SOAP}: servicio contract-first con Spring-WS
+        (\texttt{libro-catalogo.xsd} $\rightarrow$ JAXB), expuesto en
+        \texttt{/ws/libro-catalogo.wsdl}, con manejo de \texttt{SOAP Fault} para ISBN
+        inexistente.
+  \item \textbf{Documentación}: OpenAPI/Swagger UI en \texttt{/api/documentation}
+        (con alias \texttt{/api/docs}), configurado con springdoc-openapi 2.9.0.
+\end{itemize}
+
+\subsection{Frontend}
+
+El frontend es una aplicación Angular 17+ conectada a la API mediante el servicio
+\texttt{libro.service.ts}, que usa \texttt{Observable<ApiResponse<T>>} y desenvuelve el
+\texttt{.data} del envelope antes de llegar a los componentes. Incluye login, listado
+paginado de libros con ruta protegida, formulario para crear y editar libros,
+eliminación desde el listado y un interceptor de errores 401 con guard de autenticación.
+
+En esta unidad Kevin amplió el frontend con cuatro entregas verificables en el
+historial de la rama \texttt{feature/frontend-kevin} (21 commits, mergeados a
+\texttt{main} en el commit \texttt{546380e}):
+
+\begin{enumerate}[leftmargin=1.2cm]
+  \item \textbf{CRUD completo de Autor} (\texttt{autor.service.ts}, commit
+        \texttt{cb8132b}), replicando literalmente el patrón de
+        \texttt{libro.service.ts}: cada método tipado como
+        \texttt{Observable<ApiResponse<T>>} y desenvuelto con
+        \texttt{.pipe(map(r => r.data))}, con las páginas de listado y formulario
+        (commits \texttt{8aac2fe} y \texttt{0060bab}).
+  \item \textbf{Página de detalle de libro con Open Library} (\texttt{libro-detalle/},
+        commit \texttt{ade913d}), que consume
+        \texttt{GET /api/v1/libros/\{id\}/enriquecido} y muestra
+        \texttt{tituloOpenLibrary}, \texttt{coverUrl}, \texttt{numeroPaginas} y
+        \texttt{descripcionOpenLibrary} con manejo explícito de campos \texttt{null}
+        (commits \texttt{64772a4} y \texttt{42fd57f} para el modelo y el método del
+        servicio).
+  \item \textbf{Vistas condicionadas por rol}: el helper \texttt{esAdmin()} del
+        \texttt{AuthService} (commit \texttt{5173124}) oculta crear/editar/eliminar
+        para el rol \texttt{USER} en libros y autores (commit \texttt{e3af62c}).
+  \item \textbf{Progressive Web App}: service worker de Angular
+        (\texttt{@angular/service-worker}) y manifest instalable (commits
+        \texttt{82779c9}, \texttt{1532b0b} y \texttt{0050774}).
+\end{enumerate}
+
+El detalle técnico de los tropiezos reales durante esta implementación (un error de
+compilación \texttt{TS1205} al reutilizar un tipo entre servicios, una suposición
+incorrecta sobre el código de respuesta del logout) está documentado en la reflexión
+individual de Kevin (sección \ref{sec:reflexion-kevin}).
+
+\subsection{Infraestructura}
+
+El despliegue se definió en \texttt{docker-compose.yml} con cinco servicios:
+\texttt{postgres} (PostgreSQL 16; \hyperlink{ref:postgres}{PostgreSQL Global Development Group, s.f.}), \texttt{redis} (Redis 7), \texttt{app} (backend
+Spring Boot), \texttt{frontend} (Angular servido por Nginx) y \texttt{nginx} (reverse
+proxy de entrada, único puerto publicado al host). El \texttt{.env} define
+\texttt{JWT\_SECRET} y \texttt{COOKIE\_SECURE} (seguro por defecto; solo se relaja en
+desarrollo local). Todos los contenedores levantan con un solo comando
+\texttt{docker compose up -d --build}.
+
+\newpage
+
+% ---------------------------------------------------------------------------
+% 3. PRUEBAS Y RESULTADOS
+% ---------------------------------------------------------------------------
+\section{Pruebas y resultados}
+
+\subsection{Pruebas automatizadas}
+\label{sec:pruebas}
+
+El proyecto pasó de 36 pruebas (unitarias y de repositorio) a 48, agregando en esta
+unidad el paquete \texttt{backend/src/test/java/ec/edu/uteq/pfcbackend/integration/},
+con 12 pruebas de integración HTTP end-to-end sobre MockMvc + Testcontainers
+(PostgreSQL 16 y Redis 7 reales). Las pruebas se organizaron en dos clases:
+
+\begin{itemize}[leftmargin=1.2cm]
+  \item \texttt{AuthIntegracionTest} (5 pruebas): login con credenciales válidas
+        devuelve 200 y fija la cookie \texttt{access\_token} con \texttt{HttpOnly};
+        login con credenciales inválidas devuelve 401; login con usuario inexistente
+        devuelve 401; listar libros sin token devuelve 401; y logout invalida el token
+        (el mismo token pasa de 200 a 401 tras el logout).
+  \item \texttt{LibroIntegracionTest} (7 pruebas): listar libros con rol USER devuelve
+        200; crear un libro con rol USER devuelve 403; crear un libro con rol ADMIN
+        devuelve 201; obtener un libro inexistente devuelve 404 con \texttt{ProblemDetail};
+        crear un libro con body inválido devuelve 400 con el arreglo \texttt{errors}
+        poblado; eliminar un libro con rol USER devuelve 403; y una respuesta exitosa
+        conserva el envelope \texttt{ApiResponse}.
+\end{itemize}
+
+El resultado del build completo es reproducible con el comando
+\texttt{./mvnw -B clean verify}: 48 pruebas ejecutadas, 0 fallos y 0 errores, con
+compilación, empaquetado y cobertura JaCoCo incluidos.
+
+\captura{figuras/figura-1-build-verify.png}{Resultado del build \texttt{clean verify}: 48 pruebas ejecutadas, 0 fallos, BUILD SUCCESS.}{fig:build}{0.85\textwidth}
+
+\captura{figuras/figura-2-jacoco.png}{Reporte de cobertura JaCoCo generado por el build.}{fig:jacoco}{0.85\textwidth}
+
+\captura{figuras/figura-3-surefire.png}{Reporte de surefire de las pruebas de integración (\texttt{AuthIntegracionTest} y \texttt{LibroIntegracionTest}).}{fig:surefire}{0.85\textwidth}
+
+\captura{figuras/figura-4-commits-maria.png}{Historial de commits de la rama con las pruebas de integración.}{fig:gitlog}{0.85\textwidth}
+
+\subsection{Prueba de carga con Apache Bench}
+\label{sec:carga}
+
+Se probó, con la herramienta \texttt{ab} de Apache (\hyperlink{ref:apache}{The Apache Software Foundation,
+s.f.}), el endpoint más usado del sistema (\texttt{GET /api/v1/libros}) contra Nginx, con
+20 usuarios concurrentes y 500 requests por corrida, usando un token JWT real. Se
+ejecutaron dos corridas: una con cache fría (tras \texttt{FLUSHALL} en Redis) y otra con
+cache caliente. La tabla siguiente resume los resultados extraídos del reporte real de
+la herramienta.
+
+\begin{table}[H]
+\centering
+\caption{Resumen de la prueba de carga con Apache Bench (500 requests, 20 usuarios concurrentes).}
+\label{tab:benchmark}
+\begin{tabular}{lccc}
+\toprule
+Métrica & Cache frío & Cache caliente & Diferencia \\
+\midrule
+Requests completados & 500 & 500 & --- \\
+Requests fallidos & 0 & 0 & --- \\
+Throughput (req/s) & 802.66 & 986.80 & +22.9\% \\
+Tiempo medio por request & 24.917 ms & 20.268 ms & $-$18.7\% \\
+P50 (mediana) & 23 ms & 19 ms & $-$17.4\% \\
+P95 & 32 ms & 27 ms & $-$15.6\% \\
+P99 & 36 ms & 30 ms & $-$16.7\% \\
+Máximo & 37 ms & 34 ms & $-$8.1\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Ambas corridas terminaron con 0 requests fallidos. La corrida con cache caliente fue más
+rápida en todos los percentiles y mantuvo mayor throughput, lo que confirma el beneficio
+del patrón cache-aside implementado con Redis.
+
+\subsection{Auditoría de seguridad OWASP Top 10:2021}
+
+La auditoría se aplicó contra el código real del repositorio y, donde fue posible, se
+ejecutaron ataques reales con \texttt{curl} contra el sistema en vivo. De ocho controles
+auditados, seis están completamente mitigados, uno tiene mitigación parcial (A07, con
+una nota concreta sobre fuerza bruta) y uno es un gap real no mitigado (rate limiting,
+que también afecta a A07). El resumen de la auditoría es el siguiente:
+
+\begin{table}[H]
+\centering
+\caption{Resumen de la auditoría OWASP Top 10:2021 aplicada al proyecto (vector, contramedida y evidencia de cada control).}
+\label{tab:owasp}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{lXXl}
+\toprule
+Vulnerabilidad & Vector de ataque & Contramedida implementada & Evidencia \\
+\midrule
+A01 Broken Access Control & Usuario \texttt{USER} intenta un write & \texttt{@PreAuthorize("hasRole('ADMIN')")} + \texttt{@EnableMethodSecurity} & curl $\rightarrow$ 403 \\
+A02 Cryptographic Failures & Dump de BD / robo de token & BCrypt (costo 10), JWT HS384, cookie \texttt{Secure} por entorno & hash \texttt{\$2a\$10\$...} \\
+A03 Injection & SQL en \texttt{titulo} & Repositorio parametrizado (Spring Data JPA) & curl $\rightarrow$ 0 resultados \\
+A04 Insecure Design & Fuerza bruta / DoS de aplicación & \textbf{Gap}: sin rate limiting (Bucket4j disponible) & 5 intentos $\rightarrow$ 5\texttimes 401 \\
+A05 Security Misconfiguration & Acceso a \texttt{/actuator/env} & Nginx no enruta \texttt{/actuator}; exposición \texttt{health,info} & \texttt{index.html} / 500 genérico \\
+A06 Vulnerable Components & CVE en librerías & Gap parcial: \texttt{jjwt} 0.12.6 $\rightarrow$ 0.13.0 & \texttt{versions:display-dependency-updates} \\
+A07 Auth Failures & Reuso de JWT robado post-logout & Blacklist de \texttt{jti} en Redis + TTL & misma cookie 200 $\rightarrow$ 401 \\
+XSS & \texttt{onerror} en \texttt{titulo} & Sanitización Angular + cookie \texttt{HttpOnly} & 0 usos de \texttt{innerHTML} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Entre los hallazgos relevantes: los intentos de inyección SQL sobre el parámetro
+\texttt{titulo} se tratan como texto literal (0 resultados, la tabla queda intacta); el
+login con usuario \texttt{USER} contra una operación de escritura devuelve 403; y la
+misma cookie reutilizada después del logout pasa de 200 a 401, verificando la blacklist
+de \texttt{jti} en Redis.
+
+\subsection{Verificación de los procedimientos de la guía}
+
+La guía pide verificar, en orden, una lista de procedimientos. El estado real de cada uno
+es el siguiente:
+
+\begin{enumerate}[label=\textbf{Paso \arabic*.}, itemsep=2pt]
+  \item \textbf{Pruebas automatizadas (10+ pasando, 0 fallos)}: el build
+        \texttt{./mvnw -B clean verify} ejecuta 48 pruebas con 0 fallos y 0 errores,
+        verificable en las capturas 1 a 4 de la sección \ref{sec:pruebas}.
+  \item \textbf{Documentación Swagger y colección Postman}: Swagger UI es accesible en
+        \texttt{http://localhost/api/documentation}, con todos los endpoints de los cinco
+        recursos CRUD documentados con sus esquemas. La colección de Postman exportada en
+        \texttt{docs/postman/SGB-API.postman\_collection.json} contiene \textbf{29
+        requests} organizadas en \textbf{6 carpetas} (Auth: 2; Libros: 7; Autores: 5;
+        Editoriales: 5; Idiomas: 5; Estados: 5), superando el mínimo de 20 que exige la
+        guía.
+  \item \textbf{API externa visible en la interfaz}: el endpoint
+        \texttt{GET /api/v1/libros/\{id\}/enriquecido} enriquece el libro con los datos
+        de Open Library. La respuesta de la API externa se almacena en Redis en el
+        namespace \texttt{openlibrary\_isbn} con TTL de 24\,h
+        (\texttt{RedisCacheConfig.java}); se verifica con
+        \texttt{docker compose exec redis redis-cli KEYS "openlibrary\_isbn*"}, que lista
+        las claves cacheadas de cada ISBN consultado, y el cliente distingue
+        \texttt{NoEncontrado} de \texttt{ServicioNoDisponible} para ofrecer un mensaje
+        amigable en la interfaz cuando el proveedor externo no responde. La
+        visualización se implementa en
+        \texttt{frontend/src/app/pages/libro-detalle/libro-detalle.html} (componente
+        \texttt{LibroDetalle}), que muestra \texttt{tituloOpenLibrary},
+        \texttt{coverUrl}, \texttt{numeroPaginas} y \texttt{descripcionOpenLibrary} con
+        \texttt{?? 'No disponible'} como valor de respaldo en cada campo, y un
+        placeholder ("Portada no disponible.") cuando \texttt{coverUrl} es
+        \texttt{null} — de modo que la página nunca se rompe si Open Library no
+        responde o el ISBN no existe ahí. Verificado en vivo para ambos casos: el
+        libro con ISBN de "1984" (con datos) y "Cien años de soledad" (sin datos),
+        ninguno de los dos produjo errores de JavaScript en el navegador.
+  \item \textbf{Headers HTTP, carga y despliegue}: la prueba de carga
+        (\texttt{ab -n 500 -c 20}) está en la sección \ref{sec:carga}; el despliegue se
+        verifica con \texttt{docker compose up -d} (sin errores) y \texttt{docker compose
+        ps}, que muestra los cinco servicios \texttt{Up} con sus healthchecks. La
+        verificación de los headers de seguridad se ejecutó en vivo contra el sistema
+        real (\texttt{curl -I} sobre \texttt{GET /api/v1/libros} con un token JWT
+        válido, a través de Nginx):
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, caption={Headers HTTP reales devueltos por el sistema (\texttt{curl -I}, 11 de agosto de 2026).}]
+HTTP/1.1 200
+Server: nginx/1.31.3
+Date: Tue, 11 Aug 2026 03:29:46 GMT
+Content-Type: application/json
+Connection: keep-alive
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 0
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+\end{lstlisting}
+        Confirma lo esperado: Spring Security no deshabilita el bloque de headers por
+        defecto (\texttt{X-Content-Type-Options: nosniff}, \texttt{X-Frame-Options:
+        DENY}, \texttt{Cache-Control} sin cache para respuestas autenticadas).
+\end{enumerate}
+
+\newpage
+
+% ---------------------------------------------------------------------------
+% 4. TENDENCIAS TECNOLOGICAS
+% ---------------------------------------------------------------------------
+\section{Tendencias tecnológicas}
+
+\subsection{Jamstack}
+
+Jamstack (\hyperlink{ref:netlify}{Netlify, s.f.}) describe una arquitectura donde el contenido se sirve estático desde una CDN y
+la lógica dinámica se consume mediante APIs. Los generadores de sitios estáticos que
+materializan esta arquitectura se clasifican por el momento en que generan el HTML:
+\textit{build-time} (Next.js estático, Nuxt, Astro) o \textit{runtime} (Next.js con SSR o
+ISR), una decisión que afecta directamente a la latencia de la primera carga y al
+\textit{time-to-interactive} de la aplicación. Este proyecto no adopta Jamstack completo,
+pero comparte una de sus ideas: el frontend Angular se construye y se sirve como
+estática a través de Nginx, y toda la dinámica se obtiene de la API REST. La diferencia
+es que aquí el reverse proxy y la API conviven en el mismo origen (\texttt{http://localhost}),
+lo que evita configuraciones de CORS. El equipo considera Jamstack apropiado para
+aplicaciones con poco estado y contenido predecible; para un catálogo con escrituras
+frecuentes y roles, el costo de desplegar el frontend y el backend por separado no
+aporta una ventaja clara.
+
+\subsection{Progressive Web Apps (PWA)}
+
+Una PWA combina una aplicación web con instalación, funcionamiento offline parcial y
+notificaciones (\hyperlink{ref:google}{Google, s.f.}). La guía del SGA pide evaluar esta tendencia y el equipo la
+implementó en el frontend: el service worker de Angular
+(\texttt{@angular/service-worker}, configurado en \texttt{ngsw-config.json}) y un
+manifest instalable (\texttt{manifest.webmanifest}) se verificaron en vivo con el stack
+completo dockerizado — el service worker se registra con estado \texttt{activated},
+sirviendo \texttt{ngsw-worker.js} a través del mismo reverse proxy Nginx que expone la
+API. La auditoría Lighthouse sobre ese mismo stack (\texttt{docs/informe/lighthouse/},
+10 de agosto de 2026) obtuvo \textbf{Performance 94}, \textbf{Accessibility 96},
+\textbf{Best Practices 100} y \textbf{SEO 82}. El equipo valora la PWA como una mejora
+razonable para el frontend actual: el listado de libros puede funcionar offline con un
+\texttt{service worker} y la instalación mejora la experiencia en móvil, sin cambiar la
+arquitectura del backend.
+
+\subsection{IA generativa}
+
+La IA generativa es la tendencia que más debate genera dentro del curso. El equipo la
+usa con una posición crítica: es útil para acelerar tareas concretas (generar
+estructuras de prueba, resumir documentación, explorar alternativas de configuración),
+pero no reemplaza la verificación. En este proyecto toda decisión de arquitectura se
+sostiene con evidencia real del repositorio (ADR, mediciones de Apache Bench, auditoría
+OWASP) y todo código generado con apoyo de herramientas se revisa, se ejecuta y se cubre
+con pruebas antes de considerarse terminado. El riesgo que el equipo identifica en la
+adopción irreflexiva de esta tecnología es que produce texto y código aparentemente
+correctos que un humano sin criterio técnico puede incorporar sin verificar, y eso se
+nota en informes con referencias inventadas o en código que no compila. La postura del
+equipo es usarla como apoyo y mantener la responsabilidad de la revisión en las
+personas. En la práctica la herramienta se usó en dos modalidades distintas: los
+asistentes de autocompletado (Copilot) para código en contexto dentro del IDE, y el
+\textit{scaffolding} de plantillas (por ejemplo, la generación inicial de un controlador
+CRUD). Ambas modalidades exponen el mismo límite ético: los modelos no garantizan
+originalidad ni trazabilidad de su output, por lo que el equipo verificó el código
+generado, lo firmó con su autoría y cubrió cada fragmento con pruebas; no se incorporó
+ningún texto ni código sin revisión humana. La responsabilidad final de un error
+introducido por una herramienta sigue siendo del equipo, y las decisiones de diseño se
+argumentaron con mediciones propias en lugar de citar afirmaciones no verificables.
+
+\newpage
+
+% ---------------------------------------------------------------------------
+% 5. MARCO TEORICO
+% ---------------------------------------------------------------------------
+\section{Marco teórico}
+
+\subsection{MVC y comparativa de frameworks}
+
+El patrón Modelo-Vista-Controlador fue descrito originalmente por Trygve Reenskaug en
+1979 dentro del entorno Smalltalk-80: el \textit{modelo} gestiona el estado de la
+aplicación, la \textit{vista} es la representación de ese estado y el \textit{controlador}
+es el manejador de las entradas del usuario. El modelo web adaptó esta separación: el
+controlador ya no recibe eventos de teclado o ratón sino solicitudes HTTP; la vista se
+renderiza en el servidor con un motor de plantillas o en el cliente (SPA); y el modelo
+pasa a incluir repositorios y servicios, no solo el estado en memoria. De esa adaptación
+surgieron variantes como MVP (\textit{Model-View-Presenter}), donde la vista no tiene
+referencia directa al modelo, y MVVM (\textit{Model-View-ViewModel}), que usa un enlace de
+datos bidireccional y es el patrón de facto en SPA modernas (\hyperlink{ref:fowler}{Fowler, 2002}) \hyperlink{ieee2}{[2]}. El backend de
+este proyecto aplica MVC en su forma en capas (controlador, servicio, repositorio), tal
+como documenta el ADR-001 de la Unidad III, y las entidades mapeadas con JPA/Hibernate
+actúan como el modelo.
+
+Todos los frameworks MVC web usan el patrón \textit{Front Controller}: un punto de
+entrada único (en PHP, \texttt{index.php}; en .NET, \texttt{Program.cs}; en Spring Boot,
+\texttt{DispatcherServlet}). Centralizar la entrada permite manejar errores,
+autenticación, logging y enrutamiento en un solo lugar, en vez de repetirlos en cada
+página. En este proyecto el ciclo completo de una petición es el siguiente: (1) la
+solicitud entra por Nginx, que enruta \texttt{/api/} hacia el backend; (2)
+\texttt{DispatcherServlet} selecciona el controlador a partir de la anotación
+\texttt{@RequestMapping}; (3) la cadena de filtros de Spring Security
+(\texttt{JwtAuthenticationFilter}) extrae el JWT de la cookie o del header
+\texttt{Authorization}, valida la firma y consulta la blacklist en Redis, estableciendo el
+contexto de seguridad; (4) el controlador recibe el request y valida el body con
+\texttt{@Valid}; (5) el servicio aplica la lógica de negocio y el repositorio de Spring
+Data JPA consulta PostgreSQL, con el cache-aside en Redis interviniendo en las lecturas
+marcadas con \texttt{@Cacheable}; (6) la respuesta se serializa en el envelope uniforme
+\texttt{ApiResponse} y se devuelve con el código HTTP correspondiente. Los pasos 4 a 6 se
+materializan en el código real siguiente (el controlador, la capa de servicio con cache y
+el envelope):
+
+\begin{lstlisting}[language=Java, caption={Controlador, servicio y cache del listado (fragmento real de \texttt{LibroController.java} y \texttt{LibroServiceImpl.java}).}]
+@RestController
+@RequestMapping("/api/v1/libros")
+public class LibroController {
+    @GetMapping
+    @Operation(summary = "Listar libros, con filtro opcional por titulo")
+    public ApiResponse<List<LibroResponse>> listar(
+            @RequestParam(required = false) String titulo, Pageable pageable) {
+        Page<LibroResponse> pagina = libroService.listar(titulo, pageable);
+        return new ApiResponse<>(pagina.getContent(), pagina);
+    }
+}
+
+@Service
+public class LibroServiceImpl {
+    @Cacheable(value = CACHE_LISTADO,
+        key = "#titulo + '-' + #pageable.pageNumber + '-' + #pageable.pageSize + ...")
+    public Page<LibroResponse> listar(String titulo, Pageable pageable) {
+        return (titulo == null || titulo.isBlank())
+            ? libroRepository.findAll(pageable)
+            : libroRepository.findByTituloContainingIgnoreCase(titulo, pageable);
+    }
+}
+\end{lstlisting}
+
+Sobre la elección del framework, el ADR-005 compara las tres opciones que el propio PDF de
+la guía menciona como válidas para este curso. La tabla siguiente extiende esa comparación
+a los cinco frameworks que la guía exige considerar (Laravel, Symfony, Spring Boot,
+ASP.NET Core y Django), con los criterios solicitados; la fila de rendimiento usa la
+misma fuente que el ADR-005 (TechEmpower, Round 23, prueba Fortunes), por ser la ronda
+publicada más reciente antes del cierre del proyecto, y el resto de los criterios se
+tomaron de la documentación oficial de cada framework (\hyperlink{ref:otwell}{Otwell, 2024}) \hyperlink{ieee1}{[1]}:
+
+\begin{table}[H]
+\centering
+\caption{Comparativa de frameworks MVC (criterios de la guía, datos de ADR-005 y documentación oficial).}
+\label{tab:comparativa}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{lXXXXX}
+\toprule
+Criterio & Laravel 11.x & Symfony 7.x & Spring Boot 3.x & ASP.NET Core 8.x & Django 5.x \\
+\midrule
+Paradigma & Convención sobre config. & Explícito & Explícito & Intermedio & Convención sobre config. \\
+ORM incluido & Eloquent & Doctrine & Spring Data JPA & EF Core & Django ORM \\
+Motor de plantillas & Blade & Twig & Thymeleaf & Razor & Django Templates \\
+Ecosistema & Paquetes (Packagist) & Paquetes & Starters (Maven) & NuGet & Apps (PyPI) \\
+Rendimiento (TechEmpower R23, Fortunes) & ~16\,800 req/s & no medido en el ADR & ~243\,639 req/s & ~609\,966 req/s & no medido en el ADR \\
+Adopción LATAM & Alta (agencias/freelance) & Media & Alta (empresarial/banca) & Media & Media \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+El equipo eligió Spring Boot principalmente por tres razones documentadas: la experiencia
+previa real con Java, el tipado estático (que detecta errores en tiempo de compilación,
+como el desajuste de tipos detectado en el ADR-004) y un ecosistema de testing maduro
+(Testcontainers levantando un PostgreSQL real en las pruebas, sin mocks de base de
+datos). Se reconoce en el propio ADR-005 la contraparte honesta: Java es más verboso que
+Laravel para el mismo CRUD (cada recurso requirió siete archivos), y la configuración
+inicial de Spring es más pesada que la de un microframework. La elección se justifica
+además por el rendimiento medido en este mismo proyecto (P99 de 30 a 36 ms en la prueba de
+carga), que confirma que el rendimiento bruto de ASP.NET Core no era la restricción activa
+del PFC (ADR-005).
+
+\subsection{REST, JWT y OpenAPI}
+
+HTTP es un protocolo sin estado por diseño: cada petición es independiente y el servidor
+no guarda memoria de interacciones previas (\hyperlink{ref:fielding2000}{Fielding, 2000}; \hyperlink{ref:fielding2022}{Fielding et al., 2022}) \hyperlink{ieee3}{[3]}. REST
+se apoya en seis principios que la API de este proyecto aplica (o relega, cuando no
+aplica) de forma explícita y verificable:
+
+\begin{itemize}
+  \item \textbf{Cliente-Servidor}: separación total entre el frontend Angular y la API;
+        el backend nunca genera HTML y el frontend nunca accede a la base de datos.
+  \item \textbf{Stateless}: el servidor no guarda sesión; la identidad viaja en el JWT de
+        cada petición. Esto es lo que habilita escalar horizontalmente sin
+        \textit{sticky sessions}.
+  \item \textbf{Cacheable}: cada recurso declara con \texttt{Cache-Control} si su
+        respuesta puede almacenarse; el cache-aside en Redis (un TTL por dominio) es la
+        implementación concreta de este principio.
+  \item \textbf{Interface uniforme}: identificación de recursos por URI, representación
+        JSON autodescriptiva (\texttt{ApiResponse}), mensajes autodescriptivos y HATEOAS
+        como nivel de madurez que el proyecto alcanza parcialmente (enlaces en el
+        envelope) sin hipermedia completa.
+  \item \textbf{Layered System}: frontend, Nginx, backend, Redis y PostgreSQL forman una
+        pila en la que cada capa solo conoce a su vecina; Nginx esconde la topología
+        interna al cliente.
+  \item \textbf{Code-on-Demand}: opcional por definición; no se usa, porque introducir
+        código descargado complica la seguridad sin aportar al PFC.
+\end{itemize}
+
+La jerarquía de la URI es el contrato de esa interface uniforme, y su diseño sigue las
+reglas de la arquitectura REST (\hyperlink{ref:richardson}{Richardson \& Ruby, 2007}) \hyperlink{ieee4}{[4]}: sustantivos en plural
+(\texttt{/libros}, no \texttt{/getLibros}), anidamiento solo para subrecursos legítimos,
+sin verbos en la URL y con el versionado en el prefijo \texttt{/api/v1}. El diseño
+completo de la API es:
+
+\begin{itemize}
+  \item \texttt{POST /api/v1/auth/login} y \texttt{POST /api/v1/auth/logout}
+  \item \texttt{GET /api/v1/libros} (con filtros), \texttt{GET /api/v1/libros/\{id\}},
+        \texttt{POST /api/v1/libros}, \texttt{PUT /api/v1/libros/\{id\}},
+        \texttt{DELETE /api/v1/libros/\{id\}} y
+        \texttt{GET /api/v1/libros/\{id\}/enriquecido} (consume la API externa)
+  \item \texttt{GET|POST|PUT|DELETE /api/v1/autores/\{id\}}, lo mismo para
+        \texttt{/editoriales}, \texttt{/idiomas} y \texttt{/estados}
+  \item \texttt{GET /actuator/health} para el healthcheck de Docker
+\end{itemize}
+
+La estructura del JWT es la de la especificación RFC~7519 (\hyperlink{ref:jones2015}{Jones et al., 2015}): un
+\textbf{Header} con el algoritmo (\texttt{HMAC-SHA384} en este proyecto),
+un \textbf{Payload} con los claims \texttt{sub} (id de usuario), \texttt{username},
+\texttt{roles}, \texttt{iat} y \texttt{exp}, y una \textbf{Signature} calculada con el
+secreto de 48 bytes. El flujo es: \texttt{login} valida credenciales contra PostgreSQL →
+el servidor firma el JWT y lo entrega en una cookie \texttt{HttpOnly} con
+\texttt{SameSite=Strict} (también aceptado por \texttt{Authorization: Bearer}) → en cada
+request autenticada, \texttt{JwtAuthenticationFilter} valida la firma y la expiración y
+establece el \texttt{SecurityContext} → en el \texttt{logout}, el \texttt{jti} entra en
+una blacklist de Redis (\hyperlink{ref:redis}{Redis, s.f.}) con TTL. La cookie \texttt{HttpOnly} no es legible
+desde JavaScript, lo que elimina el vector de robo por XSS que existiría con
+\texttt{localStorage}; y la blacklist resuelve el problema estructural del JWT de que un
+token firmado no puede revocarse (la estrategia de corto TTL + revocación explícita se
+documenta en la guía como la vía correcta).
+
+OpenAPI (\hyperlink{ref:openapi}{OpenAPI Initiative, 2023}) actúa como el contrato entre frontend y backend: la
+especificación se genera con springdoc-openapi a partir de las anotaciones de los
+controladores y se sirve en \texttt{/api/documentation}. Para cada endpoint la
+especificación declara \texttt{operationId}, parámetros de ruta y query, el
+\texttt{requestBody} con su \texttt{reference} al esquema y las respuestas por código con
+sus esquemas, de modo que Angular puede generar su cliente tipado desde el mismo
+documento. Para visualizar ese contrato se compararon dos alternativas: \textbf{Swagger
+UI}, interactivo (permite ejecutar las peticiones desde el navegador), y \textbf{Redoc},
+estático y pensado como documentación de lectura; el proyecto usa Swagger UI por su
+interactividad y lo expone en \texttt{/swagger-ui.html}. La documentación queda
+sincronizada con el código, a diferencia de documentación escrita a mano que tiende a
+quedar desactualizada. El fragmento siguiente es la entrada que springdoc-openapi genera
+para el login (resumida), y muestra los elementos que la guía pide identificar:
+\texttt{operationId}, parámetros, \texttt{requestBody} con su esquema y las respuestas
+por código:
+
+\begin{lstlisting}[caption={Documentación OpenAPI del endpoint de login (generada por springdoc-openapi, resumida).}]
+paths:
+  /api/v1/auth/login:
+    post:
+      operationId: login
+      summary: Autentica un usuario y devuelve un JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'   # username, password
+      responses:
+        '200':
+          description: Login exitoso; el JWT viaja en la cookie access_token
+          headers:
+            Set-Cookie:
+              schema: { type: string }
+        '401':
+          description: Credenciales invalidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+\end{lstlisting}
+
+\subsection{SOAP vs.\ REST}
+
+SOAP es un protocolo de mensajería basado en XML con un contrato formal (WSDL)
+(\hyperlink{ref:w3c}{World Wide Web Consortium, 2000}). Estructuralmente, un mensaje SOAP se compone de un
+\texttt{Envelope} que envuelve al \texttt{Header} (metadatos, seguridades WS-Security) y
+al \texttt{Body} (la operación), y los errores viajan como \texttt{SOAP Fault}; cada
+request indica la operación a ejecutar con el header \texttt{SOAPAction}, y el transporte
+no se limita a HTTP, sino que puede ser SMTP o TCP. REST, en cambio, es un estilo
+arquitectónico sobre HTTP en el que los recursos se manipulan con los verbos del protocolo
+(\hyperlink{ref:fielding2000}{Fielding, 2000}) \hyperlink{ieee3}{[3]}. La comparación entre frameworks y protocolos que aquí se resume sigue
+la taxonomía de referencia del SWEBOK en su edición 4.0 (\hyperlink{ref:washizaki}{Washizaki et al., 2024}) \hyperlink{ieee5}{[5]}, que
+estructura el cuerpo de conocimiento en ingeniería de software; el proyecto implementa
+ambos protocolos, lo que permite compararlos con evidencia real.
+
+\begin{table}[H]
+\centering
+\caption{Comparación SOAP vs.\ REST aplicada a los servicios implementados.}
+\label{tab:soap-rest}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{lXX}
+\toprule
+Criterio & SOAP (implementado) & REST (implementado) \\
+\midrule
+Formato de mensaje & XML (SOAP Envelope) & JSON \\
+Tipado & Estricto (XSD, contract-first) & Definido por el esquema OpenAPI \\
+Overhead de serialización & Alto (namespaces) & Bajo \\
+Contrato & WSDL (contract-first) & OpenAPI (descripción) \\
+Descubrimiento & WSDL auto-generado & Swagger UI \\
+Transporte & HTTP (también SMTP/JMS) & HTTP(S) \\
+Manejo de errores & SOAP Fault (HTTP 500) & Códigos de estado + ProblemDetail \\
+Cacheabilidad & Difícil (POST) & Explícita (GET cacheable) \\
+Tamaño de payload (medido) & 564 bytes / 8 campos & 550 bytes / 16 campos \\
+Seguridad & WS-Security & HTTPS + JWT \\
+Complejidad de implementación & Alta & Baja-media \\
+Interoperabilidad & Alta (sistemas corporativos) & Amplia en la web \\
+Idempotencia & No definida por SOAP & GET/PUT/DELETE por diseño \\
+Facilidad desde JavaScript & Baja (XML + WSDL) & Alta (JSON nativo) \\
+Casos de uso actuales (2025) & Banca, sector público, SRI & APIs web, móvil, SPA \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+La medición real de payload del mismo caso de uso (consultar el libro ``1984'') arroja
+un resultado interesante: la respuesta REST es 14 bytes más pequeña que la SOAP a pesar
+de traer el doble de campos, porque cada elemento XML necesita etiquetas de apertura y
+cierre con namespace. La respuesta SOAP para un ISBN inexistente devuelve un
+\texttt{SOAP Fault} bien formado con el mensaje exacto de la causa, mientras el
+equivalente REST devuelve un \texttt{ProblemDetail} con su código de estado. El equipo
+mantiene el servicio SOAP público a propósito, como demostración del resultado de
+aprendizaje que exige exponer ambos tipos de servicio, y no como recurso de negocio que
+necesite protección por rol.
+
+El SOAP no es una tecnología muerta en 2025: sigue siendo el estándar donde la
+interoperabilidad entre instituciones grandes importa más que la simplicidad. Los casos
+de uso vigentes se concentran en la banca (servicios de core bancario entre
+instituciones, compensación y clearing), en el sector público ecuatoriano (intercambio
+de datos entre instituciones del Estado a través de sus \textit{service bus}) y en el
+SRI, que publica servicios SOAP/WSDL para la validación de comprobantes electrónicos;
+son sistemas donde los clientes están controlados (no se consumen desde el navegador) y
+donde el contrato WSDL firmado reduce ambigüedad contractual. Ninguno de esos casos
+justifica hoy una API pública nueva en SOAP, pero un desarrollador ecuatoriano los va a
+encontrar en su carrera profesional, y por eso esta práctica los implementa.
+
+Para consumir una API externa, la guía pide comparar los clientes HTTP de los tres
+stack que se comparan en la Unidad III: \textbf{GuzzleHTTP} (PHP), \textbf{HttpClient}
+(.NET) y \textbf{RestTemplate/WebClient} (Java). Los tres cubren peticiones GET/POST con
+headers y JSON, pero se diferencian en tres dimensiones prácticas: los \textbf{timeouts}
+de conexión y respuesta (configurables en los tres, en este proyecto 5\,s de conexión y
+10\,s de respuesta vía \texttt{WebClientConfig}), el \textbf{retry con backoff} ante
+fallos transitorios (Guzzle y HttpClient lo traen como middleware nativo; en WebClient
+hay que componerlo con Reactor) y la \textbf{concurrencia}: RestTemplate bloquea el hilo
+mientras espera la respuesta, mientras que WebClient es reactivo y no bloquea, lo que
+escala mejor bajo carga concurrente. El fragmento siguiente es el consumo real de Open
+Library en el endpoint \texttt{/enriquecido}, y muestra el manejo explícito de los tres
+tipos de fallo que una API externa puede producir:
+
+\begin{lstlisting}[language=Java, caption={Consumo de API externa con manejo de errores (fragmento de \texttt{OpenLibraryClient.java}).}]
+@Cacheable(value = "openlibrary_isbn", key = "#isbn",
+        unless = "#result.getClass().getSimpleName().equals('ServicioNoDisponible')")
+public OpenLibraryResult buscarPorIsbn(String isbn) {
+    String isbnNormalizado = isbn.replaceAll("[^0-9Xx]", "");
+    try {
+        OpenLibraryResponse datos = openLibraryWebClient.get()
+                .uri("/isbn/{isbn}.json", isbnNormalizado)
+                .retrieve()
+                .bodyToMono(OpenLibraryResponse.class)
+                .timeout(TIMEOUT_RESPUESTA)   // 10 s
+                .block();
+        return datos != null ? new Encontrado(datos) : new NoEncontrado();
+    } catch (WebClientResponseException.NotFound ex) {
+        return new NoEncontrado();              // 404: dato definitivo, se cachea
+    } catch (WebClientResponseException ex) {
+        return new ServicioNoDisponible();      // 5xx del proveedor
+    } catch (WebClientRequestException ex) {
+        return new ServicioNoDisponible();      // red caida, DNS, conexion
+    } catch (RuntimeException ex) {
+        if (ex.getCause() instanceof TimeoutException) {
+            return new ServicioNoDisponible();  // no responde a tiempo
+        }
+        throw ex;
+    }
+}
+\end{lstlisting}
+
+La distinción entre \texttt{NoEncontrado} y \texttt{ServicioNoDisponible} no es un
+detalle: el cache-aside con la anotación \texttt{@Cacheable} de Spring Cache (\hyperlink{ref:redis}{Redis, s.f.})
+guarda por defecto la primera respuesta de cada ISBN, y si se cacheara un fallo
+transitorio, la API quedaría "congelada" en estado de error durante todo el TTL. Por eso
+el \texttt{unless} impide cachear \texttt{ServicioNoDisponible} pero sí cachea el 404,
+que es un dato definitivo. Cachear respuestas externas está justificado por tres
+razones: respetar el \textit{rate limiting} del proveedor, reducir la latencia
+percibida (una consulta externa puede tardar cientos de milisegundos) y tolerar la
+indisponibilidad del proveedor. El TTL se decide por dominio: datos meteorológicos
+(cambian cada hora) con TTL corto de 10 minutos, tipos de cambio (1 hora) y datos
+prácticamente estáticos como el metadato de un ISBN (24 horas); un TTL único para todos
+los dominios sería incorrecto para cualquiera de ellos.
+
+\subsection{Seguridad, rendimiento y despliegue}
+
+El proyecto aplica buenas prácticas de seguridad verificadas en la auditoría OWASP
+(\hyperlink{ref:owasp}{OWASP Foundation, 2021}) \hyperlink{ieee6}{[6]}. Las contraseñas se almacenan con BCrypt (costo 10, hash
+\texttt{\$2a\$10\$...}); el JWT se firma con HMAC-SHA384 (secreto de 48 bytes base64),
+rechazando tokens sin firma o con algoritmo distinto; la cookie de sesión es segura por
+defecto y condicionada por entorno (antes de esta unidad estaba fijada en
+\texttt{false}); y las consultas se ejecutan parametrizadas por Spring Data, sin
+concatenación de strings SQL. El diseño defiende la capa HTTP con los headers que Spring
+Security habilita por defecto (el bloque de headers no está deshabilitado en
+\texttt{SecurityConfig}): \texttt{X-Content-Type-Options: nosniff},
+\texttt{X-Frame-Options: DENY} y \texttt{Cache-Control} en las respuestas, verificados en
+vivo con \texttt{curl -I} en la sección \ref{sec:pruebas} (Verificación de los
+procedimientos de la guía, paso 4).
+
+Sobre rendimiento, la prueba de carga siguió la metodología de la guía (concurrencia
+\texttt{-c}, volumen \texttt{-n} y endpoint objetivo): el comando exacto fue
+\texttt{ab -n 500 -c 20 -H "Authorization: Bearer <token>" http://nginx/api/v1/libros},
+ejecutado desde un contenedor descartable en la misma red de Docker para no instalar nada
+en el host (\hyperlink{ref:apache}{Apache Software Foundation, s.f.}). El endpoint más usado respondió con
+\textbf{986.80 req/s con cache caliente} frente a \textbf{802.66 req/s con cache fría}, y
+todos los percentiles mejoraron: P50 de 23 a 19\,ms, P95 de 32 a 27\,ms, P99 de 36 a
+30\,ms. El \textbf{error rate fue 0\% en ambas corridas} (1000 requests totales). Estos
+números sustentan que, para el volumen esperado de un sistema académico, la configuración
+actual no presenta cuellos de botella. La interpretación de un sistema que degrada
+suavemente bajo carga y no produce errores en picos sigue el marco de \textit{Release
+It!} (\hyperlink{ref:nygard}{Nygard, 2018}) \hyperlink{ieee7}{[7]}, que separa la resistencia estructural (la aplicación no se cae ante
+fallos) del rendimiento puro.
+
+El despliegue se define con Docker Compose (\hyperlink{ref:docker}{Docker, s.f.}): PostgreSQL, Redis, backend, frontend y Nginx
+como reverse proxy. Las relaciones entre servicios son explícitas en el compose: la app
+depende de \texttt{postgres} y \texttt{redis} (que llegan a estar saludables vía
+healthchecks antes de arrancar), y \texttt{nginx} es el único punto de entrada al mundo
+exterior. Nginx enruta \texttt{/api/} hacia el backend y \texttt{/} hacia el frontend, y
+no expone \texttt{/actuator/*}, lo que impide acceder a endpoints de monitorización desde
+el exterior; además, el backend solo habilita \texttt{health} e \texttt{info} de
+Actuator. Docker aporta tres beneficios concretos a este proyecto: \textbf{entornos
+reproducibles} (el mismo \texttt{docker-compose.yml} levanta el sistema idéntico en
+cualquier máquina, sin configurar JDK, Node, PostgreSQL ni Redis a mano),
+\textbf{aislamiento de dependencias} (cada servicio encapsula sus librerías y versiones,
+evitando el clásico \texttt{it works on my machine}) y la base para \textbf{CI/CD} (los
+pipelines pueden construir la misma imagen que se ejecuta en producción). Los secretos y
+valores de configuración se inyectan con variables de entorno a través de
+\texttt{environment:} en el compose y \texttt{\$\{VARIABLE\}} en \texttt{application.yml}
+(por ejemplo \texttt{JWT\_SECRET}, \texttt{COOKIE\_SECURE}, \texttt{DB\_*}); nunca en el
+código fuente, porque un archivo con secretos hardcodeados se filtra si el repositorio se
+hace público o se comparte, y no puede cambiar entre entornos sin recompilar. El
+despliegue completo se levanta con \texttt{docker compose up -d} y se verifica con
+\texttt{docker compose ps}, que muestra los cinco servicios \texttt{Up} con sus
+healthchecks.
+
+\newpage
+
+% ---------------------------------------------------------------------------
+% 6. REFLEXIONES INDIVIDUALES
+% ---------------------------------------------------------------------------
+\section{Reflexiones individuales}
+
+\subsection{Loor Medranda Marlon Taylor (tech lead / backend / infraestructura)}
+
+A lo largo de este proyecto tuve que corregir tres errores propios que, revisados en
+retrospectiva, dejan lecciones más útiles que cualquier cosa que hubiera aprendido si
+todo hubiese salido bien a la primera.
+
+El primero fue un login roto en producción local, causado por versionar la API a
+\texttt{/api/v1} sin actualizar en el mismo cambio los matchers de
+\texttt{SecurityConfig}, que seguían apuntando a las rutas sin versionar (commit
+\texttt{8e73f02}). El síntoma no apareció en ningún test unitario ni de compilación:
+apareció al probar el flujo real en vivo, porque \texttt{SecurityConfig} y los
+controladores viven en archivos distintos y nada obliga a que cambien juntos. La
+lección no es "tener cuidado", que es inútil como lección porque no es accionable — es
+que un cambio de contrato de API (una ruta, un prefijo, un nombre de campo expuesto)
+toca más superficie de la que el diff muestra a primera vista, y que verificar en vivo
+después de cada cambio estructural — no solo correr los tests — no es un paso opcional
+ni redundante, incluso cuando "solo" se está agregando un prefijo de versión.
+
+El segundo fue un error de comparación \texttt{==} en vez de \texttt{.equals()} dentro
+de una expresión SpEL de \texttt{@Cacheable(unless=...)} en \texttt{OpenLibraryClient}
+(corregido en el commit \texttt{c80426b}). Esa condición determinaba si un resultado de
+Open Library debía cachearse o no, y en las pruebas manuales que hice antes de la
+corrección "funcionaba" — porque el caso que probé casualmente caía del lado correcto
+de la comparación, no porque la comparación fuera correcta. La lección real ahí es que
+pasar una prueba manual no confirma que el mecanismo subyacente sea correcto; confirma
+que ese caso particular no expuso el defecto. Un lenguaje/motor de expresiones que no
+garantiza comparación por identidad de referencia versus por valor es exactamente el
+tipo de detalle que un test "parece que funciona" no detecta, y que solo aparece si se
+piensa explícitamente en el contrato del lenguaje, no en el resultado observado una vez.
+
+El tercero lo encontramos nosotros mismos, auditando nuestro propio código con el mismo
+rigor que le exigiríamos a un tercero: una cookie de sesión con \texttt{secure(false)}
+hardcodeado en \texttt{AuthController}, sin ningún mecanismo que lo condicionara al
+entorno de despliegue (corregido en el commit \texttt{aa3e6b3}, ya con
+\texttt{app.cookie.secure} configurable y seguro por defecto). Nadie fuera del equipo lo
+señaló; lo encontramos porque decidimos hacer la auditoría OWASP contra el código real
+en vez de tratarla como un formalismo documental para cumplir un punto del PDF. Esa es
+la lección que más me deja este bloque: revisar el propio trabajo con la misma
+rigurosidad que se le exigiría a un tercero no es un ejercicio vacío ni redundante —
+encuentra fallos reales que de otra forma solo aparecerían en producción, o peor, no
+aparecerían nunca porque nadie los busca.
+
+Si empezara este proyecto de nuevo, escribiría desde el día uno un checklist corto de
+"qué verificar en vivo tras cada cambio de contrato de API" (autenticación, cada rol
+relevante, al menos un caso de error esperado) en vez de descubrir la necesidad de ese
+checklist de forma reactiva, después de que un bug de ese tipo ya llegó a producción
+local una vez.
+
+\subsection{Escudero Plaza María del Rosario (tests de integración)}
+
+En esta unidad mi tarea fue escribir los tests de integración del backend. La guía pedía
+mínimo 10 tests y dejé 12, repartidos en dos clases: una para autenticación (login,
+logout y acceso sin token) y otra para el CRUD de libros y los permisos por rol.
+
+Lo que más me costó no fue escribir los tests, sino hacer que funcionaran. Mi
+computadora tiene Java 25 instalado y el proyecto usa Java 21, así que al principio los
+tests ni siquiera compilaban: Lombok no generaba el código y tuve que correr el build con
+una bandera especial (\texttt{-Dmaven.compiler.proc=full}). Ahí entendí que el problema
+no era el código, sino que mi entorno no coincidía con el del proyecto.
+
+También asumí cosas que no eran. Por ejemplo, pensé que el logout devolvía un 200 con un
+cuerpo, pero en realidad devuelve 204 (sin contenido). Y al probar la creación de
+libros, el test fallaba porque el formulario necesita más campos de los que yo le
+mandaba (año de publicación, editorial, idioma, estado y stock). Tuve que leer bien el
+DTO y el controlador para arreglarlo. Eso me enseñó a revisar el código antes de asumir
+cómo funciona un endpoint.
+
+Otro problema fue con los contenedores de prueba. Al separar los tests en dos clases,
+compartí los mismos contenedores de base de datos y Redis, y cuando la primera clase
+terminaba, la segunda ya no podía conectarse y todo devolvía 500. La solución fue darle
+a cada clase sus propios contenedores. Me quedó claro que los tests tienen que estar
+aislados entre sí.
+
+Al final el proyecto completo pasa con 48 tests y cero fallos. Si tuviera que repetir la
+unidad, empezaría leyendo el código de cada endpoint antes de escribir el primer test.
+
+\subsection{Castro Espinoza Kevin Moisés (frontend)}
+\label{sec:reflexion-kevin}
+
+Mi parte de esta unidad fue el frontend Angular: implementar el CRUD de Autor, integrar
+Open Library en la vista de detalle, condicionar la UI por rol y convertir la app en
+PWA. El primer tropiezo fue técnico y muy concreto: al extraer la interfaz
+\texttt{PageResponse} a un modelo compartido para reutilizarla entre
+\texttt{libro.service.ts} y el nuevo \texttt{autor.service.ts}, el build falló con
+\texttt{TS1205} porque el proyecto usa \texttt{isolatedModules} y TypeScript exige
+\texttt{export type} al re-exportar tipos. Fue un recordatorio directo de que "copiar el
+patrón" de un archivo existente no basta si no se entiende la configuración del
+compilador que lo sostiene.
+
+Aprender a desenvolver el \texttt{ApiResponse} con \texttt{.pipe(map(r => r.data))} en
+cada método, tal como ya hacía \texttt{libro.service.ts}, me dejó claro por qué el
+contrato del backend (envelope en éxito, \texttt{ProblemDetail} en error) se traduce en
+que el componente nunca ve el JSON crudo. También entendí el punto de la guía sobre los
+campos de Open Library que pueden venir \texttt{null}: el DTO
+\texttt{LibroEnriquecidoResponse} documenta que si el ISBN no existe en Open Library la
+respuesta sigue siendo 200, y la vista debía manejar ese caso con placeholders en vez de
+romperse.
+
+Finalmente, el rol que viaja en el body del login (\texttt{LoginResponse(username,
+rol)}) se guarda en el estado del \texttt{AuthService} y condiciona crear/editar/eliminar
+con \texttt{*ngIf}; la cookie \texttt{HttpOnly} hace inviable decodificar el JWT en el
+frontend, así que confiar en el body del login era lo correcto. La PWA se agregó
+manualmente porque \texttt{ng add @angular/pwa} no resolvió el esquema con el builder de
+aplicación (clave \texttt{browser} en \texttt{angular.json}); el reporte Lighthouse
+quedó en \texttt{docs/informe/lighthouse} con performance 94 y best practices 100.
+
+\newpage
+
+% ---------------------------------------------------------------------------
+% 7. CONCLUSIONES
+% ---------------------------------------------------------------------------
+\section{Conclusiones}
+
+\begin{enumerate}[leftmargin=1.2cm]
+  \item La API REST quedó completa y versionada bajo \texttt{/api/v1}, con un formato de
+        respuesta uniforme y errores estandarizados. Esto hace que los clientes (frontend,
+        SOAP, pruebas) traten la API de forma consistente.
+  \item La autenticación JWT en cookie \texttt{HttpOnly} con blacklist de \texttt{jti}
+        en Redis cumple el requisito de sesión sin estado del servidor y permite revocar
+        tokens de forma efectiva, verificado en pruebas: el mismo token pasa de 200 a 401
+        después del logout.
+  \item La autorización por rol (\texttt{@PreAuthorize}) se verifica con pruebas de
+        integración: un usuario \texttt{USER} recibe 403 en las operaciones de escritura
+        mientras que \texttt{ADMIN} las ejecuta con 201.
+  \item El proyecto expone e integra servicios web REST y SOAP. La comparación con datos
+        reales muestra que la respuesta REST es más pequeña que la SOAP incluso trayendo
+        el doble de campos, y que el servicio SOAP devuelve \texttt{SOAP Fault} bien
+        formado para errores.
+  \item La prueba de carga y la auditoría OWASP aportan evidencia real de rendimiento y
+        seguridad: 986.80 req/s con cache caliente sin requests fallidos, y seis de ocho
+        controles OWASP completamente mitigados, con los gaps documentados de forma
+        honesta (rate limiting, dependencias desactualizadas).
+  \item Las pruebas automatizadas pasaron de 36 a 48 con la incorporación de 12 tests de
+        integración HTTP, y todo el build (\texttt{./mvnw -B clean verify}) termina en
+        verde, lo que da confianza para continuar evolucionando el sistema.
+\end{enumerate}
+
+% ---------------------------------------------------------------------------
+% 8. TRABAJO FUTURO
+% ---------------------------------------------------------------------------
+\section{Trabajo futuro}
+
+\begin{itemize}[leftmargin=1.2cm]
+  \item Aplicar la migración V9 para eliminar el campo legado \texttt{libros.autor}
+        (String), una vez que el frontend consuma la relación N:M real con la entidad
+        Autor.
+  \item Implementar rate limiting en los endpoints de autenticación (por ejemplo, con
+        Bucket4j y Redis), documentado como gap real en la auditoría OWASP (A04/A07).
+  \item Actualizar \texttt{jjwt} de 0.12.6 a 0.13.0 por tocar directamente la superficie
+        de autenticación, y planificar la migración a Spring Boot 4 en un bloque dedicado.
+  \item Mitigar el riesgo de cache stampede del ADR-003 (por ejemplo, con
+        \texttt{@Cacheable(sync=true)} o invalidación selectiva por página).
+  \item Agregar a la API REST un endpoint de búsqueda por ISBN equivalente al del servicio
+        SOAP, para comparar ambos servicios sobre el mismo contrato de datos.
+  \item Completar la PWA del frontend y registrar el reporte Lighthouse como evidencia.
+\end{itemize}
+
+\newpage
+
+% ---------------------------------------------------------------------------
+% 9. REFERENCIAS
+% ---------------------------------------------------------------------------
+\section{Referencias}
+
+La guía de práctica exige referencias en norma \textbf{IEEE} y el enunciado del SGA exige
+norma \textbf{APA}. Siguiendo la regla del equipo de cumplir ambos requisitos cuando el
+SGA añade una exigencia que la guía no contradice (decisión documentada en
+\texttt{DECISIONES-GUIA-VS-ENUNCIADO-U4.md}), las citas en el cuerpo se presentan en
+autor-año (APA) y, para las fuentes que la guía exige como mínimo, también con su número
+de cita IEEE \texttt{[n]} en el mismo lugar del texto; ese número corresponde a la lista
+IEEE que aparece al final de esta sección. Se presentan los dos listados: el primero en
+APA (para el SGA) y el segundo con las referencias mínimas IEEE que exige la guía.
+
+\subsection*{Referencias en norma APA (exigidas por el SGA)}
+
+\begin{itemize}[leftmargin=1.5cm, itemindent=-1.5cm, itemsep=5pt]
+  \item \hypertarget{ref:apache}{Apache Software Foundation. (s.f.). \textit{ab --- Apache HTTP server benchmarking tool}.} Recuperado el 10 de agosto de 2026, de \url{https://httpd.apache.org/docs/current/programs/ab.html}
+  \item \hypertarget{ref:breeding}{Breeding, M. (2017). Chapter 2. Koha. The original open source ILS. \textit{Library Technology Reports}, \textit{53}(6).} \url{https://journals.ala.org/index.php/ltr/article/view/6405/8452}
+  \item \hypertarget{ref:docker}{Docker. (s.f.). \textit{Docker docs}.} Recuperado el 10 de agosto de 2026, de \url{https://docs.docker.com/}
+  \item \hypertarget{ref:fielding2000}{Fielding, R. T. (2000). \textit{Architectural styles and the design of network-based software architectures} [Tesis doctoral, University of California, Irvine].} \url{https://ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm}
+  \item \hypertarget{ref:fielding2022}{Fielding, R., Nottingham, M., \& Reschke, J. (Eds.). (2022). \textit{HTTP Semantics} (RFC 9110). Internet Engineering Task Force.} \url{https://www.rfc-editor.org/rfc/rfc9110}
+  \item \hypertarget{ref:fowler}{Fowler, M. (2002). \textit{Patterns of Enterprise Application Architecture}.} Addison-Wesley Professional.
+  \item \hypertarget{ref:google}{Google. (s.f.). \textit{Learn PWA}.} Recuperado el 10 de agosto de 2026, de \url{https://web.dev/progressive-web-apps/}
+  \item \hypertarget{ref:jones2015}{Jones, M., Bradley, J., \& Sakimura, N. (2015). \textit{JSON Web Token (JWT)} (RFC 7519). Internet Engineering Task Force.} \url{https://datatracker.ietf.org/doc/html/rfc7519}
+  \item \hypertarget{ref:netlify}{Netlify. (s.f.). \textit{Jamstack}.} Recuperado el 10 de agosto de 2026, de \url{https://jamstack.org/}
+  \item \hypertarget{ref:nygard}{Nygard, M. (2018). \textit{Release It! Design and deploy production-ready software} (2.ª ed.). Pragmatic Bookshelf.}
+  \item \hypertarget{ref:openapi}{OpenAPI Initiative. (2023). \textit{OpenAPI Specification 3.1}.} \url{https://spec.openapis.org/oas/latest.html}
+  \item \hypertarget{ref:otwell}{Otwell, T. (2024). \textit{Laravel 11.x documentation}.} Recuperado el 10 de agosto de 2026, de \url{https://laravel.com/docs/11.x}
+  \item \hypertarget{ref:owasp}{OWASP Foundation. (2021). \textit{OWASP Top 10:2021}.} \url{https://owasp.org/Top10/}
+  \item \hypertarget{ref:postgres}{PostgreSQL Global Development Group. (s.f.). \textit{PostgreSQL documentation}.} Recuperado el 10 de agosto de 2026, de \url{https://www.postgresql.org/docs/}
+  \item \hypertarget{ref:redis}{Redis. (s.f.). \textit{Redis documentation}.} Recuperado el 10 de agosto de 2026, de \url{https://redis.io/docs/latest/}
+  \item \hypertarget{ref:richardson}{Richardson, L., \& Ruby, S. (2007). \textit{RESTful Web Services}.} O'Reilly Media.
+  \item \hypertarget{ref:springboot}{Spring Boot. (s.f.). \textit{Spring Boot reference documentation}.} Recuperado el 10 de agosto de 2026, de \url{https://docs.spring.io/spring-boot/}
+  \item \hypertarget{ref:springsecurity}{Spring Security. (s.f.). \textit{Spring Security reference}.} Recuperado el 10 de agosto de 2026, de \url{https://docs.spring.io/spring-security/}
+  \item \hypertarget{ref:washizaki}{Washizaki, H. (Ed.). (2024). \textit{Guide to the Software Engineering Body of Knowledge (SWEBOK), Version 4.0}. IEEE Computer Society.} \url{https://www.computer.org/education/bodies-of-knowledge/software-engineering}
+  \item \hypertarget{ref:w3c}{World Wide Web Consortium. (2000). \textit{SOAP Version 1.1} (W3C Note).} \url{https://www.w3.org/TR/soap/}
+\end{itemize}
+
+\subsection*{Referencias mínimas en norma IEEE (exigidas por la guía de práctica)}
+
+\begin{enumerate}[label={[\arabic*]}, leftmargin=1.2cm, itemsep=5pt]
+\item \hypertarget{ieee1}{T. Otwell, ``Laravel 11.x Documentation,'' Laravel LLC, 2024. [Online]. Available: \url{https://laravel.com/docs/11.x}}
+\item \hypertarget{ieee2}{M. Fowler, \textit{Patterns of Enterprise Application Architecture}. Boston, MA, USA: Addison-Wesley, 2002, ISBN: 978-0-321-12521-7.}
+\item \hypertarget{ieee3}{R. T. Fielding, ``Architectural Styles and the Design of Network-Based Software Architectures,'' Ph.D. dissertation, Univ. of California, Irvine, CA, USA, 2000. [Online]. Available: \url{https://ics.uci.edu/~fielding/pubs/dissertation/top.htm}}
+\item \hypertarget{ieee4}{L. Richardson and S. Ruby, \textit{RESTful Web Services}. Sebastopol, CA, USA: O'Reilly Media, 2007, ISBN: 978-0-596-52926-0.}
+\item \hypertarget{ieee5}{H. Washizaki, Ed., \textit{Guide to the Software Engineering Body of Knowledge (SWEBOK), Version 4.0}. IEEE Computer Society, 2024.}
+\item \hypertarget{ieee6}{OWASP Foundation, ``OWASP Top 10:2021,'' 2021. [Online]. Available: \url{https://owasp.org/Top10/}}
+\item \hypertarget{ieee7}{M. T. Nygard, \textit{Release It! Design and Deploy Production-Ready Software}, 2nd ed. Pragmatic Bookshelf, 2018, ISBN: 978-1-68050-239-8.}
+\end{enumerate}
+
+\newpage
+
+% ---------------------------------------------------------------------------
+% ANEXO A
+% ---------------------------------------------------------------------------
+\section*{Anexo A: Estructura del repositorio (versión final en main)}
+\addcontentsline{toc}{section}{Anexo A: Estructura del repositorio}
+
+La estructura final del repositorio en \texttt{main}, generada a partir del árbol real del
+proyecto (se omiten \texttt{node\_modules}, \texttt{target} y \texttt{.git}), es la
+siguiente:
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize, columns=fullflexible, caption={Estructura del repositorio.}]
+.
++-- backend/
+|   +-- src/main/java/ec/edu/uteq/pfcbackend/
+|   |   +-- client/          OpenLibraryClient, OpenLibraryResult
+|   |   +-- config/          SecurityConfig, RedisCacheConfig, WebClientConfig,
+|   |   |                    WebServiceConfig, OpenApiConfig, CacheablePage
+|   |   +-- controller/      Auth, Libro, Autor, Editorial, Idioma, EstadoLibro,
+|   |   |                    DocsRedirect
+|   |   +-- dto/             ApiResponse, LibroEnriquecidoResponse, LoginRequest, ...
+|   |   +-- entity/          Libro, Autor, Editorial, Idioma, EstadoLibro, Usuario
+|   |   +-- exception/       GlobalExceptionHandler, BusinessException, ...
+|   |   +-- repository/      LibroRepository, UsuarioRepository, ...
+|   |   +-- security/        JwtService, JwtAuthenticationFilter, TokenBlacklistService
+|   |   +-- service/         LibroService(+Impl), AutorService(+Impl), ...
+|   |   +-- ws/              LibroCatalogoEndpoint (SOAP), LibroNoEncontradoSoapException
+|   +-- src/main/resources/
+|   |   +-- application.yml
+|   |   +-- db/migration/    V1..V8 (Flyway)
+|   |   +-- libro-catalogo.xsd
+|   +-- src/test/java/ec/edu/uteq/pfcbackend/
+|   |   +-- integration/     BaseIntegracionTest, AuthIntegracionTest, LibroIntegracionTest
+|   |   +-- client/          OpenLibraryClientTest
+|   |   +-- repository/      LibroRepositoryTest
+|   |   +-- service/         LibroServiceImplTest, AutorServiceImplTest
+|   +-- Dockerfile, pom.xml, mvnw
++-- frontend/src/app/
+|   +-- core/                guards/auth.guard, interceptors, models, services
+|   +-- pages/               login/, libros/, libro-form/, libro-detalle/, autores/, autor-form/
+|   +-- shared/               notification-banner
++-- nginx/nginx.conf         reverse proxy de entrada (unico puerto publicado)
++-- docker-compose.yml       5 servicios: postgres, redis, app, frontend, nginx
++-- docs/
+|   +-- adr/                 ADR-001 a ADR-005
+|   +-- arquitectura/        C4, diagrama de clases y ER (puml + png)
+|   +-- informe/             informe-unidad-iv.tex, apache-bench.md, auditoria-owasp.md,
+|   |                        reflexion-maria.md, reflexion-marlon.md, reflexion-kevin.md,
+|   |                        lighthouse/
+|   +-- postman/             SGB-API.postman_collection.json (29 requests)
++-- .env.example             JWT_SECRET, COOKIE_SECURE, etc.
++-- README.md
+\end{lstlisting}
+
+\newpage
+
+% ---------------------------------------------------------------------------
+% ANEXO C
+% ---------------------------------------------------------------------------
+\section*{Anexo C: Análisis y discusión}
+\addcontentsline{toc}{section}{Anexo C: Análisis y discusión}
+
+Las cuatro preguntas que se responden a continuación son las del Anexo C de la guía de
+práctica (\textit{guia\_practica\_experimental\_IV\_app\_web.pdf}). Cada nivel de Bloom
+se indica entre corchetes, como en el enunciado. Las respuestas se basan únicamente en
+la evidencia de este repositorio (ADRs, benchmark, auditoría OWASP y código real).
+
+\subsection*{Pregunta 1 (Evaluación / Bloom nivel 6)}
+
+\textbf{Revisando el PFC completo (PE-U1 a PE-U4): ¿cuál fue la decisión técnica más
+difícil que tomó el equipo? ¿Qué alternativas consideraron? ¿Con el conocimiento actual,
+tomarían la misma decisión o una diferente? Justifique con criterios técnicos
+referenciados.}
+
+La decisión más difícil fue la elección del framework de backend, porque concentraba los
+mayores costos de migración y porque las tres alternativas que el propio PDF declara
+válidas (Laravel 11.x, ASP.NET Core 8.x y Spring Boot 3.x) eran técnicamente razonables
+(ADR-005). Se consideraron las tres: Laravel se descartó por falta de experiencia real
+del equipo con PHP y por el tipado dinámico (un error de tipo en un DTO con reglas de
+autorización por rol solo se detectaría en ejecución); ASP.NET Core se descartó pese a ser
+la opción de mayor rendimiento bruto en TechEmpower Round 23 (~609\,966 req/s frente a
+~243\,639 req/s de Spring en la prueba Fortunes), porque el rendimiento no era la
+restricción activa de este proyecto. Se eligió Spring Boot por el dominio previo del
+equipo con Java, el tipado estático y un ecosistema de testing maduro (Testcontainers,
+JUnit 5). Con el conocimiento actual el equipo tomaría la misma decisión: el resultado
+del proyecto (5 recursos CRUD, JWT, cache-aside, SOAP contract-first, 48 tests y un
+Docker Compose de 5 servicios) no mostró que el rendimiento de Spring fuera una limitación
+real, y la base de conocimiento previa fue determinante con un plazo acotado. La evidencia
+de desempeño (P99 de 36 ms con cache frío y 30 ms con cache caliente en la prueba de carga)
+respalda retrospectivamente que el factor de elección no debía ser el rendimiento bruto.
+
+\subsection*{Pregunta 2 (Síntesis / Bloom nivel 5)}
+
+\textbf{Los resultados de Apache Bench mostraron \_\_\_ req/s con \_\_\_\% de error. Si se
+exigiera que el sistema soporte 500 usuarios concurrentes con tasa de error 0\%, ¿qué
+cambios de arquitectura y código serían necesarios? Dibuje la arquitectura escalada.}
+
+Los resultados de Apache Bench mostraron \textbf{802.66 req/s} con la cache fría y
+\textbf{986.80 req/s} con la cache caliente, con \textbf{0\% de error} en ambas corridas
+(\texttt{n=500}, \texttt{c=20}, endpoint \texttt{GET /api/v1/libros} contra Nginx). Para
+soportar 500 usuarios concurrentes con 0\% de error, el cambio de mayor impacto no es de
+código sino de topología, porque la autenticación JWT stateless ya permite escalado
+horizontal sin sesiones pegajosas. Los cambios serían:
+
+\begin{itemize}[itemsep=2pt]
+  \item \textbf{Escalar el plano de aplicación:} varias réplicas de la app Spring Boot
+  detrás de Nginx en modo \textit{load balancer} (\texttt{upstream} con \texttt{round-robin}),
+  en vez de una sola instancia. El JWT \texttt{HttpOnly} (ADR-003, dual cookie + header
+  \texttt{Authorization}) funciona igual en cualquier réplica porque el servidor no guarda
+  estado de sesión.
+  \item \textbf{Alta disponibilidad de Redis:} hoy la cache-aside y la blacklist de
+  \texttt{jti} comparten una sola instancia de Redis, reconocido en el ADR-003 como un
+  punto único de fallo. Para 500 concurrentes se requeriría Redis Sentinel o Cluster, y
+  separar la blacklist de la cache en instancias distintas.
+  \item \textbf{Escalar PostgreSQL:} aumentar el pool de conexiones (\texttt{HikariCP}),
+  usar un \textit{connection pooler} intermedio (PgBouncer) y añadir una réplica de
+  lectura; las escrituras son infrecuentes frente a las lecturas del catálogo.
+  \item \textbf{Mitigar el \textit{cache stampede}:} el ADR-003 documenta que hoy el riesgo
+  existe y no está mitigado (TTL que expira con muchas lecturas simultáneas y
+  \texttt{allEntries=true} en cada escritura). A 500 usuarios concurrentes se justificaría
+  \texttt{@Cacheable(sync=true)} para serializar la reconstrucción de una key.
+  \item \textbf{\textit{Rate limiting} hacia la API externa:} el consumo de Open Library
+  pasa por el mismo \texttt{WebClient} (sección de desarrollo); a esa concurrencia se
+  requeriría un límite de peticiones por ventana de tiempo y un TTL de cache acorde al
+  dominio (los 5 minutos actuales del cache-aside están dentro del rango que la guía
+  sugiere para datos que cambian poco).
+\end{itemize}
+
+Arquitectura escalada propuesta:
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
+Cliente (SPA Angular 17+)  ->  https://localhost:443 (Nginx LB, round-robin)
+                                        |
+                  +---------------------+---------------------+
+                  |                     |                     |
+               app-1                app-2                 app-N   (Spring Boot,
+                  |                     |                     |      JWT stateless)
+                  +---------------------+---------------------+
+                                        |
+                        +---------------+---------------+
+                        |                               |
+                  Redis Cluster                    PostgreSQL 16
+             (cache-aside + blacklist)          (pool + replica
+                        |                      de lectura + PgBouncer)
+                        |
+             API externa: Open Library (WebClient, TTL, rate limit)
+\end{lstlisting}
+
+\subsection*{Pregunta 3 (Análisis / Bloom nivel 4)}
+
+\textbf{Analice los 6 principios REST de Fielding contra la API REST del PFC: ¿cuáles
+cumple completamente, cuáles parcialmente y cuáles no? Para los principios no cumplidos:
+¿cuál es el costo de no cumplirlos en este contexto específico?}
+
+\begin{table}[H]
+\centering
+\caption{Cumplimiento de los 6 principios de Fielding en la API del PFC.}
+\label{tab:fielding-annexo}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{lXX}
+\toprule
+Principio & Cumplimiento & Evidencia en el repo \\
+\midrule
+Client-Server & Completo & Angular 17+ consume la API; el servidor no renderiza la vista \\
+Stateless & Completo & JWT firmado en cada petición; blacklist de \texttt{jti} en Redis (ADR-003) \\
+Cacheable & Parcial & Cache-aside en Redis (TTL 5 min); sin cabecera \texttt{Cache-Control} hacia el cliente \\
+Uniform Interface & Parcial & URIs semánticas (\texttt{/api/v1/libros}) y verbos HTTP; sin HATEOAS/hipermedia \\
+Layered System & Completo & Nginx como reverse proxy delante de la app; el cliente solo ve Nginx \\
+Code-On-Demand & No & No se envían scripts descargables; es un principio opcional en REST \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Cacheable (parcial):} las respuestas se cachean en el servidor (Redis), pero la
+API no emite la cabecera \texttt{Cache-Control}, por lo que el navegador o un CDN no
+pueden reutilizar la respuesta. El costo en este contexto es bajo: el consumidor real es
+una SPA del propio equipo y el cache-aside ya reduce la carga de PostgreSQL; un CDN solo
+aportaría si hubiera usuarios externos dispersos.
+
+\textbf{Uniform Interface (parcial):} faltan los \textit{links} de hipermedia (HATEOAS);
+las respuestas JSON no enlazan los recursos relacionados. El costo es moderado: el cliente
+conoce las URIs de forma estática (convención del equipo), por lo que no se pierde
+adaptabilidad, pero un consumidor tercero tendría que leer la documentación OpenAPI en vez
+de descubrir los recursos en la propia respuesta. Para un PFC con consumidores conocidos
+es aceptable.
+
+\textbf{Code-On-Demand (no cumplido):} REST lo define como opcional y el equipo no lo usa
+(la SPA transfiere el código en build, no por HTTP dinámico). El costo es nulo: ningún
+escenario del PFC requiere ejecutar código provisto por el servidor en tiempo de ejecución.
+
+\subsection*{Pregunta 4 (Evaluación / Bloom nivel 6)}
+
+\textbf{Comparando el PFC con un sistema web de producción real del mismo dominio (buscar
+un caso de estudio publicado), ¿qué características de calidad (ISO/IEC 25010:2023) están
+cubiertas por el PFC y cuáles requerirían trabajo adicional para ser comercialmente
+viables? ¿Cuánto tiempo estimaría para hacerlo comercialmente viable?}
+
+Tomando el catálogo de una biblioteca como dominio, las características de ISO/IEC
+25010:2023 que el PFC cubre con evidencia son: \textbf{adecuación funcional} (5 recursos
+CRUD, autenticación con roles, SOAP y REST), \textbf{seguridad} parcial (auditoría OWASP
+A01--A07 con 6 hallazgos mitigados y 2 brechas documentadas), \textbf{eficiencia de
+desempeño} en carga moderada (P99 30--36 ms a 20 concurrentes) y \textbf{mantenibilidad}
+(arquitectura en capas, ADRs, 48 tests y 60\,\% de cobertura de instrucciones medida por
+JaCoCo en el último build).
+
+Requerirían trabajo adicional para ser comercialmente viable: \textbf{fiabilidad} (sin
+monitoreo, \textit{health checks} ni respaldo/restauración de datos documentados),
+\textbf{usabilidad} (sin auditoría de accesibilidad WCAG ni pruebas con usuarios reales),
+\textbf{portabilidad} parcial (Docker Compose sí, pero sin \textit{secrets} en el
+repositorio ni \textit{pipeline} CI/CD automatizado) y \textbf{seguridad} restante (las
+dos brechas de la auditoría y \textit{rate limiting} frente a consumo abusivo).
+
+Como caso de estudio publicado del mismo dominio, Koha (\hyperlink{ref:breeding}{Breeding, 2017}) es el
+primer sistema integrado de gestión bibliotecaria (ILS) de código abierto, en producción
+ininterrumpida desde el año 2000 (creado originalmente para el Horowhenua Library Trust
+en Nueva Zelanda) y usado hoy en bibliotecas de todo tamaño, incluyendo consorcios
+completos — una escala de producción real de 25 años que este PFC no alcanza ni pretende
+alcanzar en un semestre. La comparación en tres características de ISO/IEC 25010:2023
+deja ver la brecha real, no solo la esperada:
+
+\begin{itemize}[itemsep=2pt]
+  \item \textbf{Adecuación funcional:} Koha cubre módulos de circulación, catalogación
+  bajo estándares bibliotecarios reales (MARC 21, UNIMARC, Z39.50/SRU), adquisiciones,
+  publicaciones seriadas y un OPAC público, además de protocolos de integración con
+  hardware externo (SIP2/NCIP para autopréstamo y RFID). Este PFC cubre 5 recursos CRUD
+  genéricos y dos protocolos de exposición (REST y SOAP), sin ningún estándar
+  bibliotecario real, porque no era el objetivo del curso.
+  \item \textbf{Fiabilidad:} Koha tiene 25 años de operación en producción real, con un
+  proceso de release formal respaldado por una comunidad activa. Este PFC no tiene
+  monitoreo más allá de los healthchecks de Docker, ni una estrategia de
+  respaldo/restauración de PostgreSQL documentada.
+  \item \textbf{Portabilidad/Interoperabilidad:} Koha se integra con sistemas de terceros
+  mediante protocolos bibliotecarios estándar (SIP2, Z39.50/SRU para catalogación
+  compartida entre bibliotecas). Este PFC integra un único servicio externo (Open
+  Library, vía REST) y no implementa ningún estándar de interoperabilidad bibliotecaria.
+\end{itemize}
+
+Desglose temporal estimado para acercar este PFC a un nivel de madurez comparable, más
+granular que el rango de 2 a 3 meses ya mencionado: 1 semana para monitoreo básico
+(métricas y logs centralizados), 1 semana para respaldos automáticos de PostgreSQL, 2
+semanas para cerrar las 2 brechas de la auditoría OWASP (rate limiting y actualización de
+\texttt{jjwt}), 2 semanas para pruebas de accesibilidad WCAG y ajustes de UI, y 2 semanas
+para un pipeline CI/CD con despliegue de múltiples réplicas y TLS gestionado (8 semanas
+en total, con una persona dedicada). Ninguna de esas 8 semanas cierra la brecha de
+interoperabilidad bibliotecaria real (MARC, Z39.50, SIP2) que Koha sí tiene: implementar
+esos estándares es un proyecto de dominio en sí mismo, no una tarea de endurecimiento del
+sistema actual, y por eso se mantiene fuera de la estimación de viabilidad comercial de
+este PFC en su forma actual.
+
+\end{document}

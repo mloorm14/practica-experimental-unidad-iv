@@ -1,6 +1,6 @@
 # Guía de continuidad del equipo — Unidad IV
 
-Este documento está dirigido a cualquier persona (o IA asistente) que se incorpore a este repositorio sin haber estado en el trabajo previo. Es autocontenido y es la fuente de verdad del estado actual del proyecto — si algo en otro documento contradice lo que dice aquí, este documento manda.
+Este documento está dirigido a cualquier integrante del equipo que se incorpore a este repositorio sin haber estado en el trabajo previo. Es autocontenido y es la fuente de verdad del estado actual del proyecto — si algo en otro documento contradice lo que dice aquí, este documento manda.
 
 ## 1. Contexto
 
@@ -101,7 +101,7 @@ Estructura (usar `docs/informe/Informe-Tecnico-Unidad-III-Equipo-D.docx` como pl
   - 5.3 — SOAP vs. REST, tabla con **mínimo 8 criterios**, usando `docs/informe/ejemplo-soap-vs-rest.md` como base real (no reescribir desde cero, expandir esa base).
   - 5.4 — Seguridad + rendimiento + Docker, usando `docs/informe/auditoria-owasp.md` y `docs/informe/apache-bench.md` como evidencia real (no repetir contenido teórico genérico que ya está cubierto por esos documentos, referenciarlos).
 - Sección de tendencias, **mínimo 400 palabras**: Jamstack + PWA + IA generativa, con posición crítica del equipo (no solo descriptiva).
-- Reflexión individual, **mínimo 100 palabras por persona** — la de Marlon ya existe como borrador en `docs/informe/reflexion-marlon.md`; María y Kevin deben escribir la propia siguiendo el mismo criterio (hechos reales de este repositorio, no genérico).
+- Reflexión individual, **mínimo 100 palabras por persona** — la de Marlon ya está redactada en `docs/informe/reflexion-marlon.md`; María y Kevin deben escribir la propia siguiendo el mismo criterio (hechos reales de este repositorio, no genérico).
 - Conclusiones.
 - Trabajo futuro.
 - Referencias en **norma APA, mínimo 5 fuentes**, incluyendo obligatoriamente **Fielding (2000)** (la disertación doctoral de REST) y la **documentación oficial de Spring Boot**.
